@@ -172,16 +172,17 @@
 				init:
 				approachVerbs: 4 1 8
 				posn: 100 126
-				addToPic:
+				;addToPic:
 			)
 			(if (proc0_2 40)
-				(deskLamp setCel: 0 approachVerbs: 4 1 8 init: addToPic:)
+				;(deskLamp setCel: 0 approachVerbs: 4 1 8 init: addToPic:)
+				(deskLamp setCel: 0 approachVerbs: 4 1 8 init:)
 			else
 				(deskLamp approachVerbs: 4 1 8 init: addToPic:)
 			)
 			(wasteBasket
 				init:
-				addToPic:
+				;addToPic:
 				approachVerbs: 4 1 8
 				stopUpd:
 			)
