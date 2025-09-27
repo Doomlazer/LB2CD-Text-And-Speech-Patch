@@ -61,11 +61,11 @@
 			)
 			(else 
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(gEgo posn: 60 180)
 			)
 		)
-		(gIconBar disable: 7)
+		;(gIconBar disable: 7)
 		(super init:)
 		(eastDoor init:)
 		(if (proc0_2 97) (eastDoor locked: 1 forceClose: 1))
@@ -1072,7 +1072,7 @@
 			(4
 				(lampCycle dispose: delete:)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -1121,7 +1121,7 @@
 			)
 			(5
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(register dispose:)
 				(self dispose:)
 			)
@@ -1163,7 +1163,7 @@
 				(gEgo get: 29)
 				((ScriptID 21 0) doit: 798)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -1214,68 +1214,70 @@
 			)
 			(7
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
 	)
 )
 
-;;;(instance sTalkYvette of Script ;;UNSUSED
-;;;	(properties)
-;;;	
-;;;	(method (changeState newState)
-;;;		(switch (= state newState)
-;;;			(0
-;;;				(gGame handsOff:)
-;;;				(gEgo setMotion: PolyPath 68 148 self)
-;;;			)
-;;;			(1
-;;;				(gEgo
-;;;					view: 552
-;;;					setLoop: 5
-;;;					setScale: Scaler 100 100 190 0
-;;;					setCel: 0
-;;;					posn: 77 146
-;;;					cycleSpeed: 12
-;;;					setCycle: ForwardCounter 2 self
-;;;				)
-;;;			)
-;;;			(2
-;;;				(yvette setCycle: Fwd)
-;;;				(gEgo
-;;;					setLoop: 6
-;;;					setCel: 0
-;;;					posn: 75 146
-;;;					setCycle: ForwardCounter 2 self
-;;;				)
-;;;			)
-;;;			(3
-;;;				(yvette setCycle: 0)
-;;;				(gEgo
-;;;					setLoop: 5
-;;;					setCel: 0
-;;;					posn: 77 146
-;;;					setCycle: ForwardCounter 2 self
-;;;				)
-;;;			)
-;;;			(4
-;;;				(gEgo
-;;;					normalize: 831
-;;;					setScale: Scaler 110 0 190 0
-;;;					cycleSpeed: 6
-;;;					posn: 68 148
-;;;				)
-;;;				(proc0_5 gEgo yvette)
-;;;				(= cycles 1)
-;;;			)
-;;;			(5
-;;;				(gEgo setMotion: PolyPath (gEgo x?) 250 self)
-;;;			)
-;;;			(6 (global2 newRoom: 510))
-;;;		)
-;;;	)
-;;;)
+;;; Unused script kept uncommented to avoid exporting the .hep, in the hypothetical case that
+;;; this file can be used without crashes in the future after recompilation
+(instance sTalkYvette of Script ;;UNUSED
+	(properties)
+	
+	(method (changeState newState)
+		(switch (= state newState)
+			(0
+				(gGame handsOff:)
+				(gEgo setMotion: PolyPath 68 148 self)
+			)
+			(1
+				(gEgo
+					view: 552
+					setLoop: 5
+					setScale: Scaler 100 100 190 0
+					setCel: 0
+					posn: 77 146
+					cycleSpeed: 12
+					setCycle: ForwardCounter 2 self
+				)
+			)
+			(2
+				(yvette setCycle: Fwd)
+				(gEgo
+					setLoop: 6
+					setCel: 0
+					posn: 75 146
+					setCycle: ForwardCounter 2 self
+				)
+			)
+			(3
+				(yvette setCycle: 0)
+				(gEgo
+					setLoop: 5
+					setCel: 0
+					posn: 77 146
+					setCycle: ForwardCounter 2 self
+				)
+			)
+			(4
+				(gEgo
+					normalize: 831
+					setScale: Scaler 110 0 190 0
+					cycleSpeed: 6
+					posn: 68 148
+				)
+				(proc0_5 gEgo yvette)
+				(= cycles 1)
+			)
+			(5
+				(gEgo setMotion: PolyPath (gEgo x?) 250 self)
+			)
+			(6 (global2 newRoom: 510))
+		)
+	)
+)
 
 (instance sEmbraceStop of Script
 	(properties)
@@ -1436,7 +1438,7 @@
 					setScale: Scaler 110 0 190 0
 				)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -1560,7 +1562,7 @@
 				(olympia dispose:)
 				(proc0_5 gEgo paperCutter)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
