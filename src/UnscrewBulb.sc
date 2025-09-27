@@ -382,7 +382,7 @@
 	(method (doVerb theVerb)
 		(switch theVerb
 			(0
-				(self setScript: sBackRubInterrupted)
+				(rm550 setScript: sBackRubInterrupted)
 			)
 			(else  (super doVerb: theVerb))
 		)
