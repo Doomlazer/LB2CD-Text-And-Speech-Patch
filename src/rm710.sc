@@ -140,7 +140,7 @@
 			)
 			(14
 				(gGameMusic2 number: 711 flags: 1 loop: -1 play:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(gOldCast eachElementDo: #hide)
 				(global2 drawPic: 716 9 picture: 716)
 				(= cycles 1)
