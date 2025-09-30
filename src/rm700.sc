@@ -228,6 +228,7 @@
 					(= local0 1)
 				)
 				(gEgo normalize: 805 setScale: 125 loop: 1)
+				(if (!= global90 2) (Animate gEgo))
 				(gGame handsOn:)
 				;(gIconBar disable: 7)
 				(self dispose:)

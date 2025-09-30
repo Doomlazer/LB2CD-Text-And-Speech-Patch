@@ -15,6 +15,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 610.scr, 700.scr, 550.scr and 710.scr.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.
+* Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.
 * The NewRisingSun patch has been integrated into the game. It fixes an issue with 'Endless driving' and 'Moving painting to reveal safe bug' in DOSBox.
 * NRS patches are: 28.scr, 28.hep, 250.scr, 560.scr, 994.scr, 999.scr.
