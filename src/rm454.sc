@@ -196,7 +196,7 @@
 			)
 			(4
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -275,7 +275,7 @@
 				(lid1 show:)
 				(gEgo normalize: 831 setScale: Scaler 131 30 190 21)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -312,7 +312,7 @@
 			(2
 				(if (!= global123 5)
 					(gGame handsOn:)
-					(gIconBar disable: 7)
+					;(gIconBar disable: 7)
 				)
 				(self dispose:)
 			)
@@ -414,7 +414,7 @@
 			(8
 				(= global115 0)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -445,7 +445,7 @@
 				(gEgo normalize: 831 setScale: Scaler 131 30 190 21)
 				((ScriptID 21 0) doit: 789)
 				(gGame handsOn:)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(self dispose:)
 			)
 		)
@@ -500,7 +500,7 @@
 			)
 			(7
 				(= local1 1)
-				(gIconBar disable: 7)
+				;(gIconBar disable: 7)
 				(gWrapSound number: 454 flags: 1 loop: 1 play: self)
 			)
 			(8 0)
