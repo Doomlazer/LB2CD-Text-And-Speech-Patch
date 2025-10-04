@@ -620,9 +620,9 @@
 		(switch theVerb
 			(4
 				(cond 
-					(global115 (global2 setScript: sHandleTheCase 0 0))
 					((and (== global123 5) (not (proc0_2 90))) (global2 setScript: sHide))
 					((== global123 5) (gLb2Messager say: 15 4 1))
+					(global115 (global2 setScript: sHandleTheCase 0 0))
 					(else (global2 setScript: sHandleTheCase 0 1))
 				)
 			)
