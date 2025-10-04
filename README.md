@@ -14,7 +14,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 550.scr, 610.scr, 700.scr, and 710.scr.
-* Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5'.
+* Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.
 * Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.

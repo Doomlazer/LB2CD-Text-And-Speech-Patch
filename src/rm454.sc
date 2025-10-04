@@ -294,7 +294,7 @@
 				(gEgo
 					view: 454
 					loop: 3
-					cel: (if register 0 else (gEgo lastCel:))
+					cel: (if register 0 else 2)
 					posn: 184 122
 					cycleSpeed: 16
 					setScale: Scaler 100 100 190 21
