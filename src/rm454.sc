@@ -500,7 +500,7 @@
 			)
 			(7
 				(= local1 1)
-				;(gIconBar disable: 7)
+				(gIconBar disable: 7) ;This was present in the floppy version, so leave it active
 				(gWrapSound number: 454 flags: 1 loop: 1 play: self)
 			)
 			(8 0)
