@@ -698,6 +698,14 @@
 	(properties)
 )
 
+(class Actions of Code
+	(properties)
+	
+	(method (doVerb)
+		(return 0)
+	)
+)
+
 (class WrapMusic of List
 	(properties
 		elements 0
@@ -772,14 +780,6 @@
 				(wrapSound fade: 0 5 5 0)
 			)
 		)
-	)
-)
-
-(class Actions of Code
-	(properties)
-	
-	(method (doVerb)
-		(return 0)
 	)
 )
 
