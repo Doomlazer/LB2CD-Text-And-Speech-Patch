@@ -119,6 +119,7 @@
 					(!= gGNumber 525)
 					(!= gGNumber 456)
 					(not (proc0_10 16648))
+					(not (proc0_2 80))
 				)
 				(gGameMusic2 number: 521 loop: -1 flags: 1 play:)
 			)
