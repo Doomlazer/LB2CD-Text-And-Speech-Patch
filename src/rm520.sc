@@ -229,7 +229,7 @@
 	(method (newRoom newRoomNumber)
 		(cond 
 			((== newRoomNumber 456) (super newRoom: newRoomNumber))
-			((and (== global123 4) (gEgo has: 31))
+			((and (== global123 4) (gEgo has: 31) (== newRoomNumber 510))
 				(= newRoomNumber 26)
 				(WrapMusic dispose:)
 				((ScriptID 22 0) doit: 31)
