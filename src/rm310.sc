@@ -251,10 +251,10 @@
 	)
 )
 
-;;;(instance sBartender of Script ;; unused
-;;;	(properties)
-;;;	
-;;;	(method (changeState newState)
+(instance sBartender of Script ; unused, kept to not need a heap patch
+	(properties)
+	
+	(method (changeState newState)
 ;;;		(switch (= state newState)
 ;;;			(0
 ;;;				(bartender setLoop: 2)
@@ -280,8 +280,8 @@
 ;;;			)
 ;;;			(3 (= state -1) (= cycles 1))
 ;;;		)
-;;;	)
-;;;)
+	)
+)
 
 (instance sZiggySmokes of Script
 	(properties)
@@ -307,10 +307,10 @@
 	)
 )
 
-;;;(instance sNodder of Script ;; UNUSED
-;;;	(properties)
-;;;	
-;;;	(method (changeState newState)
+(instance sNodder of Script ; unused, kept to not need a heap patch
+	(properties)
+	
+	(method (changeState newState)
 ;;;		(switch (= state newState)
 ;;;			(0 (woman2 setCycle: End self))
 ;;;			(1 (= cycles (Random 1 10)))
@@ -318,8 +318,8 @@
 ;;;			(3 (= cycles (Random 10 20)))
 ;;;			(4 (= state -1) (= cycles 1))
 ;;;		)
-;;;	)
-;;;)
+	)
+)
 
 (instance sWhoSentYa of Script
 	(properties)
