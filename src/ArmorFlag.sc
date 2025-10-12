@@ -138,7 +138,9 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				((global2 script?) next: sHeKills)
+				(if (!= script sHeKills)
+					((global2 script?) next: sHeKills)
+				)
 			else
 				(global2 setScript: sHeKills)
 			)
