@@ -14,7 +14,8 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 550.scr, 610.scr, 700.scr, and 710.scr.
-* Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization' and 'Out of sync transom animation speed'.
+* Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events'.
+* Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization', 'Out of sync transom's animation speed' and 'Armor rooms don't handle verb events'.
 * Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
 * Patch 520.scr also fixes an issue with 'Premature startup of act 5 when examining the countess' and 'Wrong music triggering when reentering the room without examining the countess'.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.

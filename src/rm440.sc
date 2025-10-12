@@ -154,7 +154,7 @@
 					(pEvent claimed: 1)
 					(gEgo setScript: sOutTapestry)
 				)
-				((& (pEvent type?) evMOVE) (super handleEvent: pEvent))
+				((& (pEvent type?) $5000) (super handleEvent: pEvent))
 				(else (return 0))
 			)
 		)
@@ -649,18 +649,18 @@
 	)
 )
 
-;;;(instance leftDoor of Feature ;;UNUSED
-;;;	(properties
-;;;		x 94
-;;;		y 88
-;;;		noun 6
-;;;		nsTop 89
-;;;		nsLeft 90
-;;;		nsBottom 134
-;;;		nsRight 99
-;;;		sightAngle 40
-;;;	)
-;;;)
+(instance leftDoor of Feature ; unused, kept to not need a heap patch
+	(properties
+		x 94
+		y 88
+		noun 6
+		nsTop 89
+		nsLeft 90
+		nsBottom 134
+		nsRight 99
+		sightAngle 40
+	)
+)
 
 (instance chest of Feature
 	(properties

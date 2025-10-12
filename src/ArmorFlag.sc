@@ -118,7 +118,7 @@
 				(pEvent claimed: 1)
 				(global2 setScript: sOffChair)
 			)
-			((& (pEvent type?) evMOVE) (super handleEvent: pEvent))
+			((& (pEvent type?) $5000) (super handleEvent: pEvent))
 		)
 	)
 	
