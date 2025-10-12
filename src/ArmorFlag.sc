@@ -627,10 +627,15 @@
 	(method (doVerb theVerb)
 		(switch theVerb
 			(4
-				(cond 
-					((not (>= (chair x?) 104)) (gLb2Messager say: 4 4 1))
-					((== (transomWin cel?) 0) (global2 setScript: sOpenTransom))
-					(else (global2 setScript: sCloseTransom))
+				(if (not (>= (chair x?) 104))
+					(gLb2Messager say: 4 4 1)
+				else
+					(= cycleSpeed (gEgo setSpeed?))
+					(if (== 0 (self cel?))
+						(global2 setScript: sOpenTransom)
+					else
+						(global2 setScript: sCloseTransom)
+					)
 				)
 			)
 			(8
