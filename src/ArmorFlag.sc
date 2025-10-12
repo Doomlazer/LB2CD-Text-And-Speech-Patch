@@ -146,10 +146,10 @@
 	)
 )
 
-;;;(instance sEnterWest of Script ;;UNUSED
-;;;	(properties)
-;;;	
-;;;	(method (changeState newState)
+(instance sEnterWest of Script ; unused, kept to not need a heap patch
+	(properties)
+	
+	(method (changeState newState)
 ;;;		(switch (= state newState)
 ;;;			(0
 ;;;				(gGame handsOff:)
@@ -163,8 +163,8 @@
 ;;;				(self dispose:)
 ;;;			)
 ;;;		)
-;;;	)
-;;;)
+	)
+)
 
 (instance sEnterNorth of Script
 	(properties)
