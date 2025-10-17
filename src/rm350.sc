@@ -18,15 +18,15 @@
 
 (public
 	rm350 0
-	proc350_2 2 ;; DUMMY. Dummies kept to avoid needing a heap patch
-	proc350_23 23 ;; DUMMY
+	proc350_2 2 ; unused, kept to not need a heap patch
+	proc350_23 23 ; unused, kept to not need a heap patch
 )
 
 (local
 	local0
 )
-(procedure (proc350_2)) ;; DUMMY
-(procedure (proc350_23)) ;; DUMMY
+(procedure (proc350_2)) ; unused, dummy kept to not need a heap patch
+(procedure (proc350_23)) ; unused, dummy kept to not need a heap patch
 
 (instance rm350 of LBRoom
 	(properties
@@ -421,6 +421,7 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
+				(gGame handsOff:)
 				(proc0_3 25)
 				(if (== (gWrapSound number?) 335)
 					(gWrapSound fade: 127 5 5 0)
