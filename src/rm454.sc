@@ -500,7 +500,11 @@
 			)
 			(7
 				(= local1 1)
-				(gIconBar disable: 7) ;This was present in the floppy version, so leave it active
+				; COMPAT: The next control panel restriction was present in the floppy version, we want to keep it.
+				; ScummVM patches the first seven "(gIconBar disable: 7)" it finds to skip them, but we've already
+				; disabled those. Using "(+ local1 6)" will always evaluate to 7, and alters the bytecode to not
+				; let ScummVM detect this one.
+				(gIconBar disable: (+ local1 6))
 				(gWrapSound number: 454 flags: 1 loop: 1 play: self)
 			)
 			(8 0)
