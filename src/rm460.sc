@@ -356,14 +356,17 @@
 				(crane setCycle: End self)
 				(moverCrate setCycle: End self)
 			)
-			(3 0)
-			(4 0)
-			(5
+			(3
+				(if (== gGNumber 660)
+					(= local0 1)
+				)
+			)
+			(4
 				((global2 obstacles?) eachElementDo: #dispose)
 				((global2 obstacles?) release:)
 				(= cycles 1)
 			)
-			(6
+			(5
 				(global2
 					addObstacle:
 						(if local0
@@ -375,7 +378,7 @@
 				(gEgo normalize: 426 setScale: 165)
 				(gEgo setMotion: MoveTo 184 159 self)
 			)
-			(7
+			(6
 				(gGame handsOn:)
 				(crane stopUpd:)
 				(moverCrate stopUpd:)

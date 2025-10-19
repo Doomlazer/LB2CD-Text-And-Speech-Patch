@@ -19,10 +19,11 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events'.
 * Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization', 'Out of sync transom's animation speed' and 'Armor rooms don't handle verb events'.
 * Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
+* Patch 460.scr fixes an issue with "Lock when trying to pass through the eastern door after swinging the crate".
 * Patch 520.scr also fixes an issue with 'Premature startup of act 5 when examining the countess' and 'Wrong music triggering when reentering the room without examining the countess'.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.
 * Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
 * Patch 770.scr fixes an issue where the rock breaking sound effects interfere with spoken dialog.
-* Patch 2660.hep fixes a bug that causes a softlock when trying to reach the bottom left part of the elevator room .
+* Patch 2660.hep fixes a bug that causes a softlock when trying to reach the bottom left part of the elevator room.
 * The NewRisingSun patch has been integrated into the game. It fixes an issue with 'Endless driving' and 'Moving painting to reveal safe bug' in DOSBox.
 * NRS patches are: 28.scr, 28.hep, 250.scr, 560.scr, 994.scr, 999.scr.
