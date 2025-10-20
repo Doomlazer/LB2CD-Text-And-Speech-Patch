@@ -1324,6 +1324,12 @@
 ;;;			)
 ;;;			(gIconBar disable: 7)
 ;;;		)
+		(if (and gNewEventHandler (gNewEventHandler at: 0))
+			(= global97 (gNewEventHandler at: 0))
+			(if gGIconBarCurIcon
+				(global97 saveCursor: (gGIconBarCurIcon cursor?))
+			)
+		)
 		(if (and argc param1) (proc0_7))
 		(if (not (gIconBar curInvIcon?)) (gIconBar disable: 5))
 		(if
