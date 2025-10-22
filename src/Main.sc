@@ -766,7 +766,7 @@
 				(++ currentSound)
 			)
 			(paused (wrapSound pause:))
-			(else (= vol (wrapSound vol?)))
+			(else (= vol 127))
 		)
 	)
 	

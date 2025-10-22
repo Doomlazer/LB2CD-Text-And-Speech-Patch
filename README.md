@@ -14,7 +14,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 550.scr, 610.scr, 700.scr, and 710.scr.
-* Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control".
+* Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control" and "Music volume can get permanently lowered down by clock chimes".
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.
 * Patch 350.scr fixes a bug that can softlock the game while entering the museum.
 * Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events'.
