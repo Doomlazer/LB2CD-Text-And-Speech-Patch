@@ -23,6 +23,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patch 460.scr fixes an issue with "Lock when trying to pass through the eastern door after swinging the crate".
 * Patch 520.scr also fixes an issue with 'Premature startup of act 5 when examining the countess' and 'Wrong music triggering when reentering the room without examining the countess'.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.
+* Patch 600.scr fixes a softlock that occurs if the 'bugs with meat' appear while leaving the basement room.
 * Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
 * Patch 770.scr fixes an issue where the rock breaking sound effects interfere with spoken dialog.
 * Patch 2660.hep fixes a bug that causes a softlock when trying to reach the bottom left part of the elevator room.

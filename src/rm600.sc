@@ -636,7 +636,7 @@
 	)
 	
 	(method (cue)
-		(if (global2 script?)
+		(if (not (gUser canControl:))
 			(meatTimer setReal: self 5)
 		else
 			(self setScript: sDoMeat)
