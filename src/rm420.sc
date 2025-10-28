@@ -157,7 +157,14 @@
 				)
 			)
 			(5
-				((ScriptID 94 1) setReal: (ScriptID 94 1) local0)
+				; BUGFIX: oRileyTimer is started in act 5, but Sierra forgot to dispose it. Doing it prevents
+				; the rest of timers from breaking if ego leaves the room before it expires. Reference:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11505
+				(oRileyTimer dispose: delete:)
+				; COMPAT: changing "local0" to "local0 0" retains the functionality of this pursuitTimer call
+				; and breaks ScummVM's detection signature. Otherwise it would patch timers:dispose to fix the
+				; oRileyTimer issue, and we've already disposed oRileyTimer above.
+				((ScriptID 94 1) setReal: (ScriptID 94 1) local0 0) ; pursuitTimer
 				(DisposeScript 2420)
 			)
 		)
