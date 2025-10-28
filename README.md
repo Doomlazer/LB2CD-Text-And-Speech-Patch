@@ -17,12 +17,13 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control" and "Music volume can get permanently lowered down by clock chimes".
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.
 * Patch 350.scr fixes a bug that can softlock the game while entering the museum.
+* Patch 420.scr fixes a bug that can cause timers to break from act 5 onwards.
 * Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events'.
 * Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization', 'Out of sync transom's animation speed' and 'Armor rooms don't handle verb events'.
 * Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
 * Patch 460.scr fixes an issue with "Lock when trying to pass through the eastern door after swinging the crate".
 * Patch 520.scr also fixes an issue with 'Premature startup of act 5 when examining the countess' and 'Wrong music triggering when reentering the room without examining the countess'.
-* Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 550)' and 'Objects disappear during the back rub scene, after the close-up'.
+* Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 560)' and 'Objects disappear during the back rub scene, after the close-up'.
 * Patch 600.scr fixes a softlock that occurs if the 'bugs with meat' appear while leaving the basement room.
 * Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
 * Patch 770.scr fixes an issue where the rock breaking sound effects interfere with spoken dialog.
