@@ -430,14 +430,34 @@
 				(= cycles 1)
 			)
 			(9
-				(if
-					(not
-						(if (== (DoAudio 6) -1)
-							(== (gWrapSound prevSignal?) -1)
-						)
-					)
-					(-- state)
-				)
+				; BUGFIX: Prevent endless taxi driving.
+				;
+				; This code never worked as Sierra intended, they wanted the drive to last until
+				; both music and speech finished playing but it ends earlier. The floppy version
+				; lasts until the music ends. The test they used here for checking if music has
+				; ended isn't correct, and the one for the speech can cause endless looping.
+				;
+				; For the music: "(== (gWrapSound prevSignal?) -1)" would only work in the floppy
+				; version of the game, the CD and floppy versions have a different Sound class.
+				; They could have used "(== (gWrapSound handle?) 0)" instead.
+				;
+				; For the speech: "(== (DoAudio audPOSITION) -1)" is unnecessary, the speech always
+				; finishes before state 9 (the script won't leave state 6 until gLb2Messager ends).
+				; "(DoAudio audPOSITION)" can be problematic as it'll return 0 if the game failed
+				; to initialize the audio/voice card, failing the test and endlessly looping.
+				;
+				; We keep the short length of the travel and prevent the endless loop by disabling
+				; the incorrect tests.
+;;;				(if
+;;;					(not
+;;;						(and
+;;;							(== (DoAudio audPOSITION) -1)
+;;;							(== (gWrapSound prevSignal?) -1)
+;;;						)
+;;;					)
+;;;					(-- state)
+;;;				)
+				; END OF BUGFIX (same has been done in sMoveBuildings:changeState(6)).
 				(= cycles 1)
 			)
 			(10
@@ -504,14 +524,24 @@
 				(= seconds (Random 6 10))
 			)
 			(6
-				(if
-					(not
-						(if (== (DoAudio 6) -1)
-							(== (gWrapSound prevSignal?) -1)
-						)
-					)
-					(-- state)
-				)
+				; BUGFIX: Prevent endless taxi driving.
+				;
+				; We keep the short length of the travel and prevent the endless loop by disabling
+				; the incorrect tests.
+;;;				(if
+;;;					(not
+;;;						(and
+;;;							(or
+;;;								(not (DoSound sndGET_AUDIO_CAPABILITY))
+;;;								(== (DoAudio audPOSITION) -1)
+;;;							)
+;;;							(== (gWrapSound handle?) 0)
+;;;						)
+;;;					)
+;;;					(-- state)
+;;;				)
+;;;				(= cycles 1)
+				; END OF BUGFIX (same has been done in sDoTakeOffFlight:changeState(9)).
 				(= cycles 1)
 			)
 			(7
