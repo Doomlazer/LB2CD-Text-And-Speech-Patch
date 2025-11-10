@@ -66,7 +66,19 @@
 					)
 				)
 			)
-			(else  (super doVerb: theVerb))
+			; BUGFIX: Fix picture and safe closing by themselves (continued).
+			;
+			; We make safePicture impersonate safePic while the picture is closed, to handle
+			; any verb that isn't "DO" just like safePic would.
+;;;			(else (super doVerb: theVerb))
+			(else
+				(if (== (self cel?) 0)
+					(self noun: 77 modNum: 560) ; set safePic's noun and modNum
+				)
+				(super doVerb: theVerb)
+				(self noun: 38 modNum: 561) ; restore safePicture's noun and modNum
+			)
+			; END OF BUGFIX (see also rm560:doit in rm560.sc, script #560).
 		)
 	)
 )

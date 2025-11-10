@@ -21,7 +21,7 @@
 )
 
 (local
-	local0
+	local0 ; unused after the closing safe/painting bugfix, kept to not need a heap patch
 	local1
 	local2
 )
@@ -127,15 +127,40 @@
 	
 	(method (doit)
 		(super doit:)
-		(if
-			(and
-				local0
-				(not ((ScriptID 561 0) cel?))
-				(!= ((ScriptID 32 0) room?) gNumber)
-			)
-			(= local0 0)
-			(self setScript: sDumpSafe)
-		)
+		; BUGFIX: Fix picture and safe closing by themselves.
+		;
+		; The floppy version checks ego's coordinates and auto-closes both painting and
+		; safe when it moves, by calling sDumpSafe. This was ditched from the CD version,
+		; they set everything up so when sDumpSafe is called, it won't close the painting
+		; and safe while they're open or opening. The new code relies on tight timings
+		; and doesn't account for fast machines, those run rm560:doit too fast, passing
+		; the tests multiple times when the painting is still opening, ending up calling
+		; sDumpSafe in a non-controlled manner, which in turn closes it.
+		;
+		; Disabling the code fixes opening the picture/safe by not using sDumpSafe anymore,
+		; with an inconvenient: safePic handles the painting when the player enters the
+		; room, the "DO" verb makes safePic call safePicture (from script #561) to open it
+		; and then hides itself. From then on, safePicture handles the painting until it's
+		; closed again. Normally, sDumpSafe would call safePic:show after closing the
+		; painting to make safePic handle it back, but we don't use it now. All works, as
+		; safePicture can open and close the picture by itself, but if the player for
+		; example uses the "LOOK" verb on the closed picture, safePicture will trigger the
+		; "opened message" instead, as it isn't meant to handle the picture while closed.
+		;
+		; We fix it by disabling the offending code, we also modify safePicture:doVerb in
+		; script #561 to make it impersonate safePic whenever the picture is closed and the
+		; player uses any verb on it except "DO".
+		;
+;;;		(if
+;;;			(and
+;;;				local0
+;;;				(not ((ScriptID 561 0) cel?))
+;;;				(!= ((ScriptID 32 0) room?) gNumber)
+;;;			)
+;;;			(= local0 0)
+;;;			(self setScript: sDumpSafe)
+;;;		)
+		; END OF BUGFIX (continued in safePicture:doVerb, DialFeature.sc (script #561)).
 	)
 	
 	(method (dispose)
@@ -219,7 +244,7 @@
 			(4
 				(proc0_5 gEgo safePic)
 				((ScriptID 561 0) init:)
-				(= local0 1)
+;;;				(= local0 1) ; unused after the closing safe/painting bugfix
 				(self hide:)
 			)
 			(else 
@@ -933,52 +958,52 @@
 	)
 )
 
-(instance sDumpSafe of Script
+(instance sDumpSafe of Script ; unused after the closing safe/painting bugfix, kept to not need a heap patch
 	(properties)
 	
 	(method (changeState newState)
-		(switch (= state newState)
-			(0
-				(if
-					(==
-						((ScriptID 561 1) cel?)
-						((ScriptID 561 1) lastCel:)
-					)
-					(gGame handsOff:)
-					((ScriptID 561 1) setPri: 5 setCycle: Beg self)
-					(= local1 1)
-				else
-					(= cycles 1)
-				)
-			)
-			(1
-				(if local1
-					(sFX number: 561 flags: 1 loop: 1 play:)
-					(= local1 0)
-					(= ticks 60)
-				else
-					(= cycles 1)
-				)
-			)
-			(2
-				(if (!= ((ScriptID 561 0) cel?) 0)
-					((ScriptID 561 0) setCycle: Beg self)
-					(sFX number: 45 flags: 1 loop: 1 play:)
-				else
-					(= cycles 1)
-				)
-			)
-			(3
-				(safePic show:)
-				((ScriptID 561 0) dispose:)
-				(= cycles 2)
-			)
-			(4
-				(DisposeScript 561)
-				(gGame handsOn:)
-				(self dispose:)
-			)
-		)
+;;;		(switch (= state newState)
+;;;			(0
+;;;				(if
+;;;					(==
+;;;						((ScriptID 561 1) cel?)
+;;;						((ScriptID 561 1) lastCel:)
+;;;					)
+;;;					(gGame handsOff:)
+;;;					((ScriptID 561 1) setPri: 5 setCycle: Beg self)
+;;;					(= local1 1)
+;;;				else
+;;;					(= cycles 1)
+;;;				)
+;;;			)
+;;;			(1
+;;;				(if local1
+;;;					(sFX number: 561 flags: 1 loop: 1 play:)
+;;;					(= local1 0)
+;;;					(= ticks 60)
+;;;				else
+;;;					(= cycles 1)
+;;;				)
+;;;			)
+;;;			(2
+;;;				(if (!= ((ScriptID 561 0) cel?) 0)
+;;;					((ScriptID 561 0) setCycle: Beg self)
+;;;					(sFX number: 45 flags: 1 loop: 1 play:)
+;;;				else
+;;;					(= cycles 1)
+;;;				)
+;;;			)
+;;;			(3
+;;;				(safePic show:)
+;;;				((ScriptID 561 0) dispose:)
+;;;				(= cycles 2)
+;;;			)
+;;;			(4
+;;;				(DisposeScript 561)
+;;;				(gGame handsOn:)
+;;;				(self dispose:)
+;;;			)
+;;;		)
 	)
 )
 
