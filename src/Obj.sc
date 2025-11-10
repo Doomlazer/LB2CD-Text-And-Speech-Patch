@@ -442,12 +442,6 @@
 	
 	(method (doit &tmp theLastSeconds)
 		(if script (script doit:))
-		; start NRS patch
-		(if (and (== seconds 0)(== ticks 0))
-			(= ticks (* 2 cycles))
-			(= cycles 0)
-		)
-		; end NRS patch
 		(cond 
 			(cycles (if (not (-- cycles)) (self cue:)))
 			(seconds

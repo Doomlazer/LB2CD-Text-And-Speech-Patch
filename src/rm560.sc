@@ -127,15 +127,15 @@
 	
 	(method (doit)
 		(super doit:)
-;;;		(if  ;; NRS patch removes this
-;;;			(and
-;;;				local0
-;;;				(not ((ScriptID 561 0) cel?))
-;;;				(!= ((ScriptID 32 0) room?) gNumber)
-;;;			)
-;;;			(= local0 0)
-;;;			(self setScript: sDumpSafe)
-;;;		)
+		(if
+			(and
+				local0
+				(not ((ScriptID 561 0) cel?))
+				(!= ((ScriptID 32 0) room?) gNumber)
+			)
+			(= local0 0)
+			(self setScript: sDumpSafe)
+		)
 	)
 	
 	(method (dispose)
