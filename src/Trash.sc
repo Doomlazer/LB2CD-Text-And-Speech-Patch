@@ -430,7 +430,7 @@
 				(= cycles 1)
 			)
 			(9
-				; BUGFIX: Prevent endless taxi driving.
+				; BUGFIX: Prevent endless taxi driving + fix taxi drive prematurely ending.
 				;
 				; This code never worked as Sierra intended, they wanted the drive to last until
 				; both music and speech finished playing but it ends earlier. The floppy version
@@ -446,8 +446,8 @@
 				; "(DoAudio audPOSITION)" can be problematic as it'll return 0 if the game failed
 				; to initialize the audio/voice card, failing the test and endlessly looping.
 				;
-				; We keep the short length of the travel and prevent the endless loop by disabling
-				; the incorrect tests.
+				; We fix it by properly checking if music has ended. The drive now lasts what was
+				; intended and it can't endlessly loop anymore.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -457,6 +457,7 @@
 ;;;					)
 ;;;					(-- state)
 ;;;				)
+				(if (gWrapSound handle?) (-- state)) ; repeat this state if music is still playing
 				; END OF BUGFIX (same has been done in sMoveBuildings:changeState(6)).
 				(= cycles 1)
 			)
@@ -524,10 +525,10 @@
 				(= seconds (Random 6 10))
 			)
 			(6
-				; BUGFIX: Prevent endless taxi driving.
+				; BUGFIX: Prevent endless taxi driving + fix taxi drive prematurely ending.
 				;
-				; We keep the short length of the travel and prevent the endless loop by disabling
-				; the incorrect tests.
+				; We fix it by properly checking if music has ended. The drive now lasts what was
+				; intended and it can't endlessly loop anymore.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -541,6 +542,7 @@
 ;;;					(-- state)
 ;;;				)
 ;;;				(= cycles 1)
+				(if (gWrapSound handle?) (-- state)) ; repeat this state if music is still playing
 				; END OF BUGFIX (same has been done in sDoTakeOffFlight:changeState(9)).
 				(= cycles 1)
 			)
