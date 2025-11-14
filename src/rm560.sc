@@ -138,9 +138,9 @@
 		; sDumpSafe in a non-controlled manner, which in turn closes it.
 		;
 		; Disabling the code fixes opening the picture/safe by not using sDumpSafe anymore,
-		; with an inconvenient: safePic handles the painting when the player enters the
-		; room, the "DO" verb makes safePic call safePicture (from script #561) to open it
-		; and then hides itself. From then on, safePicture handles the painting until it's
+		; with a side effect: safePic handles the painting when the player enters the room
+		; the "DO" verb makes safePic call safePicture (from script #561) to open it and
+		; then hides itself. From then on, safePicture handles the painting until it's
 		; closed again. Normally, sDumpSafe would call safePic:show after closing the
 		; painting to make safePic handle it back, but we don't use it now. All works, as
 		; safePicture can open and close the picture by itself, but if the player for

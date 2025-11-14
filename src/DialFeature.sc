@@ -73,7 +73,7 @@
 ;;;			(else (super doVerb: theVerb))
 			(else
 				(if (== (self cel?) 0)
-					(self noun: 77 modNum: 560) ; set safePic's noun and modNum
+					(self noun: 77 modNum: -1) ; set safePic's noun and modNum
 				)
 				(super doVerb: theVerb)
 				(self noun: 38 modNum: 561) ; restore safePicture's noun and modNum
