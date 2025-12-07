@@ -193,7 +193,7 @@
 	)
 	
 	(method (doit)
-		;(if (not local4) (gIconBar disable: 7))
+;;;		(if (not local4) (gIconBar disable: 7)) IMPROVEMENT: Remove control panel restriction
 		(super doit:)
 	)
 	
@@ -203,7 +203,21 @@
 		(if (== newRoomNumber 320)
 			(gWrapSound fade: 80 10 12 0)
 		else
-			(WrapMusic dispose:)
+			; IMPROVEMENT: fix crash in debug mode when using the south exit.
+			;
+			; The room disposes WrapMusic when using the south exit, but it isn't even
+			; initialized if the player teleports into the room using the debug mode,
+			; causing a crash the moment it attempts to dispose it.
+			;
+			; WrapMusic's wrapSound property always contains the gameMusic1 sound object
+			; while it's initialized. Also, gSounds contains all the current sounds of the
+			; game. We fix it by testing if gSounds contains WrapMusic's wrapSound before
+			; trying to dispose it.
+;;;			(WrapMusic dispose:)
+			(if (gSounds contains: (WrapMusic wrapSound?))
+				(WrapMusic dispose:)
+			)
+			; END OF IMPROVEMENT
 		)
 		(super newRoom: newRoomNumber)
 	)
