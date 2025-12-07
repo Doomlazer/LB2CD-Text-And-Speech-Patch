@@ -193,7 +193,7 @@
 	)
 	
 	(method (doit)
-;;;		(if (not local4) (gIconBar disable: 7)) IMPROVEMENT: Remove control panel restriction
+;;;		(if (not local4) (gIconBar disable: 7)) ; IMPROVEMENT: Remove control panel restriction
 		(super doit:)
 	)
 	

@@ -35,7 +35,7 @@
 	(method (init)
 		(global2 obstacles: (List new:))
 		((ScriptID 2700 0) doit: (global2 obstacles?))
-		;(gIconBar disable: 7)
+;;;		(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 		(gEgo
 			init:
 			normalize: 805
@@ -119,7 +119,7 @@
 			(2
 				(gEgo get: 35 normalize: 805 loop: 3 setScale: 125)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -158,7 +158,7 @@
 				)
 				(gEgo put: 35 normalize: 805 setScale: 125 loop: 3)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -228,9 +228,24 @@
 					(= local0 1)
 				)
 				(gEgo normalize: 805 setScale: 125 loop: 1)
-				(if (!= global90 2) (Animate gEgo))
+				; BUGFIX: prevent visual artifacts after using the snake lasso to open the
+				; sarcophagus.
+				;
+				; When the snake lasso is used to open the sarcophagus ego is animated to show
+				; the action. While this is going on a message is shown on screen on top of
+				; ego's view at the same time gEgo:normalize is called. The result is that
+				; right after the message disappears, ego's animation returns to normal, but
+				; glitchy remains of the last view used during the snake lasso animation stay
+				; there. This happens because when the message appears the underbits are
+				; stored, and they are restored when the message is disposed. The problem is
+				; that what's restored doesn't match with what's going on anymore.
+				;
+				; We fix it by using "(Animate 0)" to force a redraw of the picture, but only
+				; if one of the affected message modes (BOTH or TEXT) is being used.
+				(if (!= global90 2) (Animate 0))
+				; END OF BUGFIX
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -432,7 +447,7 @@
 			(2
 				(gGameMusic2 fade:)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -460,7 +475,7 @@
 			(global2 timer: rileyTimer)
 			(self stopUpd:)
 			(gGame handsOn:)
-			;(gIconBar disable: 7)
+;;;			(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 		)
 	)
 )
