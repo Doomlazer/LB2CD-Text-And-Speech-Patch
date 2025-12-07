@@ -29,7 +29,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patch 561.scr improves the 'Moving painting to reveal safe bug' fix.
 * Patch 600.scr fixes a softlock that occurs if the 'bugs with meat' appear while leaving the basement room.
 * Patch 700.scr also fixes a graphical issue after unlocking the sarcophagus in the mummy storage room.
-* Patch 770.scr fixes an issue where the rock breaking sound effects interfere with spoken dialog.
+* Patch 770.scr fixes an issue with "Rock-breaking sound effects interrupt spoken dialog in the BOTH message mode", "Rock-breaking sound effects sometimes aren't played", "The left cop on the tower and the generic prisoners have animations that don't loop and were supposed to", "The generic prisoners' animations sometimes unexpectedly retrigger", and "The murderer's view partially disappears when messages are shown".
 * Patch 2660.hep fixes a bug that causes a softlock when trying to reach the bottom left part of the elevator room.
 
 ## Note for vintage hardware owners:
