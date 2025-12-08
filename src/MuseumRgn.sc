@@ -1937,7 +1937,10 @@
 						)
 					)
 					(271
-						(if (proc0_2 134)
+						; Port bugfix from SVM:
+						; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11334
+						;(if (proc0_2 134) Message order is backwards. tested working in DOSBox and ScummVM
+						(if (not (proc0_2 134))
 							(gLb2Messager say: noun 6 30 0 0 modNum)
 						else
 							(gLb2Messager say: noun 6 16 0 0 modNum)
