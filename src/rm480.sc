@@ -73,7 +73,8 @@
 		(dino init: setOnMeCheck: 1 8192)
 		(rexMouth approachVerbs: 4 1)
 		(rex approachVerbs: 4 1 setOnMeCheck: 1 16384 32 init:)
-		(if (not (gEgo has: 18)) (bone init: stopUpd:))
+		;(if (not (gEgo has: 18)) (bone init: stopUpd:))
+		(if (not (gEgo has: 18)) (bone approachVerbs: 4 1 approachX: 56 approachY: 152 init: stopUpd:)) ; add missing approach verbs
 		(dinoBones approachVerbs: 4 1 init:)
 		(gNarrator x: 10 y: 10)
 	)
@@ -762,7 +763,9 @@
 	)
 	
 	(method (doVerb theVerb)
-		(dinoBones doVerb: &rest)
+		; port SVM fix https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12220
+		;(dinoBones doVerb: &rest)
+		(dinoBones doVerb: theVerb &rest) ; pass theVerb to dinoBones
 	)
 )
 
