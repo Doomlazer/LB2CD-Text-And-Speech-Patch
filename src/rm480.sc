@@ -300,7 +300,9 @@
 		(if
 			(and
 				(== (localSound number?) 483)
-				(== (localSound prevSignal?) -1)
+				; scummvm bug fix port https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12242
+				;(== (localSound prevSignal?) -1)
+				(not (localSound handle?)) ; properly detect end of music
 				(== (self state?) 15)
 			)
 			(self cue:)
