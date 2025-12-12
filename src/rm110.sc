@@ -205,7 +205,9 @@
 			)
 			(25 0)
 			(26
-				(if (== (gWrapSound prevSignal?) -1) (= cycles 1))
+				; SVM bug fix port https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12282
+				;(if (== (gWrapSound prevSignal?) -1) (= cycles 1))
+				(if (not (gWrapSound handle?)) (= cycles 1))
 			)
 			(27 (global2 newRoom: 120))
 		)
