@@ -270,10 +270,10 @@
 	)
 )
 
-;;;(instance sCopyProBack of Script
-;;;	(properties)
-;;;	
-;;;	(method (changeState newState)
+(instance sCopyProBack of Script ; unused, kept to not need a heap patch
+	(properties)
+
+	(method (changeState newState)
 ;;;		(switch (= state newState)
 ;;;			(0
 ;;;				(crod setScript: 0)
@@ -295,8 +295,8 @@
 ;;;				(self dispose:)
 ;;;			)
 ;;;		)
-;;;	)
-;;;)
+	)
+)
 
 (instance sSitAtDesk of Script
 	(properties)
@@ -811,7 +811,17 @@
 	
 	(method (doVerb theVerb)
 		(switch theVerb
-			(6 (gLb2Messager say: 13 6 46))
+			; BUGFIX: Make leftmost reporter answer to ASK with a correct noun.
+			;
+			; The leftmost reporter (personT) calls gLb2Messager:say with noun 13
+			; instead of 14 when using the ASK verb on him, wrongly showing the
+			; same message that's shown by the reporter next to him (personS).
+			;
+			; We fix it by using the correct noun. Reference:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12394
+;;;			(6 (gLb2Messager say: 13 6 46))
+			(6 (gLb2Messager say: 14 6 46))
+			; END OF BUGFIX
 			(else 
 				(super doVerb: theVerb &rest)
 			)
@@ -1200,33 +1210,33 @@
 	)
 )
 
-;;;(instance MiscPeople of Narrator ;;UNUSED
-;;;	(properties
+(instance MiscPeople of Narrator ; unused, kept to not need a heap patch
+	(properties
 ;;;		x 10
 ;;;		y 10
 ;;;		talkWidth 150
 ;;;		back 15
-;;;	)
-;;;	
-;;;	(method (init)
+	)
+
+	(method (init)
 ;;;		(= font gFont)
 ;;;		(super init: &rest)
-;;;	)
-;;;)
+	)
+)
 
-;;;(instance MidForground of Narrator ;;UNUSED
-;;;	(properties
+(instance MidForground of Narrator ; unused, kept to not need a heap patch
+	(properties
 ;;;		x 100
 ;;;		y 50
 ;;;		talkWidth 150
 ;;;		back 15
-;;;	)
-;;;	
-;;;	(method (init)
+	)
+
+	(method (init)
 ;;;		(= font gFont)
 ;;;		(super init: &rest)
-;;;	)
-;;;)
+	)
+)
 
 (instance ManWriting of Narrator
 	(properties
