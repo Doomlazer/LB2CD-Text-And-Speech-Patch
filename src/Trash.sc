@@ -380,6 +380,16 @@
 	(method (changeState newState &tmp [temp0 50])
 		(switch (= state newState)
 			(0
+				; BUGFIX: Fix Laura's messages pausing street animation during taxi travels.
+				;
+				; If the player uses a verb on any object in the taxi, the moving street
+				; animation will pause until the message is disposed. This doesn't happen
+				; while Rocco/Bob talk. The talker used for Laura wasn't set as modeless,
+				; unlike Rocco/Bob talkers.
+				;
+				; We fix it by setting gNarrator (99) as modeless. It will reset on newRoom.
+				(gNarrator modeless: 1)
+				; END OF BUGFIX (the same has been done in sMoveBuildings:changeState(0))
 				(gGame handsOff:)
 				(User canInput: 1)
 				(= cycles 1)
@@ -441,13 +451,13 @@
 				; version of the game, the CD and floppy versions have a different Sound class.
 				; They could have used "(== (gWrapSound handle?) 0)" instead.
 				;
-				; For the speech: "(== (DoAudio audPOSITION) -1)" is unnecessary, the speech always
-				; finishes before state 9 (the script won't leave state 6 until gLb2Messager ends).
-				; "(DoAudio audPOSITION)" can be problematic as it'll return 0 if the game failed
-				; to initialize the audio/voice card, failing the test and endlessly looping.
+				; For the speech: "(== (DoAudio audPOSITION) -1)" can be problematic as it'll
+				; return 0 if the game failed to initialize the audio/voice card, failing the test
+				; and endlessly looping.
 				;
-				; We fix it by properly checking if music has ended. The drive now lasts what was
-				; intended and it can't endlessly loop anymore.
+				; We fix it by properly checking if music has ended, we also check if gNarrator is
+				; initialized and the message mode isn't TEXT, which is a way better option to test
+				; if speech is ongoing. The travel now lasts what Sierra intended.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -457,9 +467,16 @@
 ;;;					)
 ;;;					(-- state)
 ;;;				)
-				(if (gWrapSound handle?) (-- state)) ; repeat this state if music is still playing
-				; END OF BUGFIX (same has been done in sMoveBuildings:changeState(6)).
+;;;				(= cycles 1)
+				(if
+					(or
+						(and (gNarrator initialized?) (!= global90 1)) ; true if a message in mode SPEECH/BOTH is ongoing
+						(gWrapSound handle?) ; true if music is playing
+					)
+					(-- state) ; reduce state by 1 to repeat the current one
+				)
 				(= cycles 1)
+				; END OF BUGFIX (the same has been done in sMoveBuildings:changeState(6)).
 			)
 			(10
 				(win1 setCycle: 0)
@@ -495,6 +512,11 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
+				; BUGFIX: Fix Laura's messages pausing street animation during taxi travels.
+				;
+				; We fix it by setting gNarrator (99) as modeless. It will reset on newRoom.
+				(gNarrator modeless: 1)
+				; END OF BUGFIX (the same has been done in sDoTakeOffFlight:changeState(0))
 				(win1 setCycle: Fwd)
 				(win2 setCycle: Fwd)
 				(win3 setCycle: Fwd)
@@ -527,24 +549,28 @@
 			(6
 				; BUGFIX: Prevent endless taxi driving + fix taxi drive prematurely ending.
 				;
-				; We fix it by properly checking if music has ended. The drive now lasts what was
-				; intended and it can't endlessly loop anymore.
+				; We fix it by properly checking if music has ended, we also check if gNarrator is
+				; initialized and message mode isn't 1, which is a way better option to test if
+				; speech is ongoing. The travel now lasts what Sierra intended.
 ;;;				(if
 ;;;					(not
 ;;;						(and
-;;;							(or
-;;;								(not (DoSound sndGET_AUDIO_CAPABILITY))
-;;;								(== (DoAudio audPOSITION) -1)
-;;;							)
-;;;							(== (gWrapSound handle?) 0)
+;;;							(== (DoAudio audPOSITION) -1)
+;;;							(== (gWrapSound prevSignal?) -1)
 ;;;						)
 ;;;					)
 ;;;					(-- state)
 ;;;				)
 ;;;				(= cycles 1)
-				(if (gWrapSound handle?) (-- state)) ; repeat this state if music is still playing
-				; END OF BUGFIX (same has been done in sDoTakeOffFlight:changeState(9)).
+				(if
+					(or
+						(and (gNarrator initialized?) (!= global90 1)) ; true if a message in mode SPEECH/BOTH is ongoing
+						(gWrapSound handle?) ; true if music is playing
+					)
+					(-- state) ; reduce state by 1 to repeat the current one
+				)
 				(= cycles 1)
+				; END OF BUGFIX (the same has been done in sDoTakeOffFlight:changeState(9)).
 			)
 			(7
 				(gWrapSound fade:)
