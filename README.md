@@ -15,8 +15,11 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 550.scr, 610.scr, 700.scr, and 710.scr.
 * Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control" and "Music volume can get permanently lowered down by clock chimes".
+* Patch 90.scr fixes an issue with "Yvette responds with the wrong message when asking her about Tut in acts 3+".
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.
-* Patch 250.scr fixes an issue with 'Endless taxi driving' and 'Taxi drive prematurely ends'.
+* Patch 110.scr fixes an issue with "The music can abruptly change during the intro".
+* Patch 230.scr fixes an issue that made the leftmost reporter answer as the one next to him, wrong voice included.
+* Patch 250.scr fixes an issue with 'Endless taxi driving', 'Taxi drive prematurely ends' and 'Laura's messages stop the street animation during the taxi drive'.
 * Patch 310.scr also has a minor improvement that prevents a crash if one teleports into the room in debug mode and then uses the south exit.
 * Patch 350.scr fixes a bug that can softlock the game while entering the museum.
 * Patch 420.scr fixes a bug that can cause timers to break from act 5 onwards.
@@ -24,6 +27,7 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 * Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization', 'Out of sync transom's animation speed' and 'Armor rooms don't handle verb events'.
 * Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
 * Patch 460.scr fixes an issue with "Lock when trying to pass through the eastern door after swinging the crate".
+* Patch 480.scr fixes an issue with "It isn't possible to get the bone unless clicking on its surroundings", "The bone can be picked up from far away" and "The music can abruptly change before the start of act 6".
 * Patch 520.scr also fixes an issue with 'Premature startup of act 5 when examining the countess' and 'Wrong music triggering when reentering the room without examining the countess'.
 * Patch 550.scr also fixes an issue with 'Lock after the back rub scene (when entering from Carrington's office, 560)' and 'Objects disappear during the back rub scene, after the close-up'.
 * Patch 560.scr fixes an issue with 'Moving painting to reveal safe bug'.
