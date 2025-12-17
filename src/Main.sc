@@ -1,4 +1,12 @@
 ;;; Sierra Script 1.0 - (do not remove this comment)
+;;;
+;;; IMPORTANT: Do not compile this file. All our changes to this script file
+;;; are actually hex edited in 0.scr because we've been unable to produce a
+;;; working patch after compiling Main.sc with SCICompanion. The only change
+;;; we've not hex edited is the workaround that swaps the position of the
+;;; WrapMusic/Actions classes, and that change isn't included in 0.scr, it's
+;;; here to prevent the generation of a problematic Main.sco if we compile
+;;; Main.sc by mistake.
 (script# 0)
 (include sci.sh)
 (use LBIconItem)
@@ -698,13 +706,24 @@
 	(properties)
 )
 
-(class Actions of Code
+; WORKAROUND: Prevent WrapMusic issues after recompilation.
+;
+; SCICompanion compiles the LB2 Main script with the class value 0x2E for
+; WrapMusic, which breaks calls from other recompiled scripts reliant on
+; WrapMusic. Changing the order that these classes appear in Main assigns the
+; expected 0x86 value to WrapMusic in the Main.sco file which, in turn passes
+; the correct value to other scripts that require 'WrapMusic' at compile time.
+; We still can't compile 0.scr to produce a working Main script patch, but
+; other scripts can now be successfully compiled without the need for hex
+; editing the patch files.
+(class Actions of Code ; Actions class moved before WrapMusic.
 	(properties)
 	
 	(method (doVerb)
 		(return 0)
 	)
 )
+; END OF WORKAROUND (continued right after the WrapMusic class)
 
 (class WrapMusic of List
 	(properties
@@ -766,7 +785,22 @@
 				(++ currentSound)
 			)
 			(paused (wrapSound pause:))
-			(else (= vol 127))
+			; BUGFIX: Prevent music being permanently lowered down by clock chimes.
+			;
+			; WrapMusic plays the music in most museum rooms. The volume it should have
+			; after unpausing is stored in its vol property, and determines the maximum
+			; volume of the gameMusic1 object. WrapMusic:cue updates vol with the value
+			; of gameMusic1's vol property, and if it's called when gameMusic1's vol
+			; isn't at maximum volume (127), WrapMusic's volume will be permanently
+			; lowered (none of the scripts raise it). This can happen during the clock
+			; chimes in certain situations depending on fades, the game's speed and the
+			; system clock's value.
+			;
+			; Fixed by making WrapMusic:cue always store 127 in the vol property.
+			; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12356
+;;;			(else (= vol (wrapSound vol?)))
+			(else (= vol 127)) ; always be 127
+			; END OF BUGFIX
 		)
 	)
 	
@@ -781,6 +815,16 @@
 			)
 		)
 	)
+	
+	; WORKAROUND: Prevent WrapMusic issues after recompilation (continued).
+;;;	(class Actions of Code ; We don't want Actions to be after WrapMusic
+;;;		(properties)
+;;;
+;;;		(method (doVerb)
+;;;			(return 0)
+;;;		)
+;;;	)
+	; END OF WORKAROUND (see also right before the WrapMusic class)
 )
 
 (instance stopGroop of Grooper
@@ -873,10 +917,16 @@
 		(= global112 {800-326-6654})
 		(= global113 {0734-303171})
 		(= global114 {900-370-5583})
-		((ScriptID 14 0) init:)
+		((ScriptID 14 0) init:) ; lb2Initcode:init
 		(DisposeScript 14)
 		(DoAudio 7 22050)
-		(= global90 2)
+		; TEXT&SPEECH CHANGE: Don't let LB2:init change global90's value.
+		;
+		; We want to keep global90's value set by lb2Initcode:init (#14). Setting a new
+		; value here is unnecessary and conflicts with ScummVM's audio/subtitles settings.
+		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
+;;;		(= global90 2)
+		; END OF TEXT&SPEECH CHANGE
 		((ScriptID 15 0) init:)
 		(= gWalkCursor walkCursor)
 		(= gLb2DoVerbCode lb2DoVerbCode)
@@ -1304,7 +1354,26 @@
 		(gUser canControl: 1 canInput: 1)
 		(gIconBar enable: 0 1 2 3 4 5 6)
 		(if (not (global2 inset:)) (gIconBar enable: 7))
-;;;		(if  ;; allow control panel
+		; IMPROVEMENT: Remove base control panel restrictions.
+		;
+		; This CD version of the game disables access to the control panel in many rooms
+		; where the floppy version allows it. That also disables it in rooms where it
+		; wasn't even intended, since handsOff/handsOn save and restore the state of
+		; IconBar, passing its disabled state to other rooms that don't explicitly
+		; re-enable it. These restrictions don't allow the player to load/save the game
+		; or change any of the game's settings. The reasons are unclear, but we've not
+		; experienced any problems after restoring the behavior of the floppy version.
+		;
+		; The base restrictions are a list of 14 rooms here in LB2:handsOn. Some of these
+		; rooms and additional ones also have calls to "(gIconBar disable: 7)" that need
+		; to be re-enabled per room. Lastly, they removed the code that re-enables access
+		; to the control panel when an inset is disposed (on Inset:dispose, #923), which
+		; has the side effect of disabling the control panel in ANY room after an inset
+		; has been disposed (the control panel is always disabled when an inset is set).
+		;
+		; In this script file we remove the base control panel restrictions.
+		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11175
+;;;		(if
 ;;;			(proc999_5
 ;;;				gNumber
 ;;;				310
@@ -1324,12 +1393,27 @@
 ;;;			)
 ;;;			(gIconBar disable: 7)
 ;;;		)
+		; END OF IMPROVEMENT (see also Inset:dispose in #923 and the script files of
+		; rooms 310, 441, 454, 520, 550, 610, 700, and 710)
+		
+		; BUGFIX: Prevent displaying hands-off cursor when the player has control.
+		;
+		; When speech is enabled, the game often shows the hands-off cursor when the
+		; player has control. The Narrator records and restores the cursor being used,
+		; and if handsOn is called after say, the Narrator restores the hands-off cursor
+		; when the speech completes. Calling handsOn before say doesn't cause the problem,
+		; but many scripts call these in the wrong order.
+		;
+		; This fix makes handsOn detect if a Narrator is saying a message, updating its
+		; saveCursor to the correct cursor when that's the case.
+		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11279
 		(if (and gNewEventHandler (gNewEventHandler at: 0))
 			(= global97 (gNewEventHandler at: 0))
 			(if gGIconBarCurIcon
 				(global97 saveCursor: (gGIconBarCurIcon cursor?))
 			)
 		)
+		; END OF BUGFIX
 		(if (and argc param1) (proc0_7))
 		(if (not (gIconBar curInvIcon?)) (gIconBar disable: 5))
 		(if

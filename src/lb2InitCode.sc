@@ -28,7 +28,15 @@
 			back: 15
 			keepWindow: 1
 		)
-		(= global90 1)
+		; TEXT&SPEECH CHANGE: Set message mode 3 on initialization.
+		;
+		; lb2Initcode:init is called by LB2:init (in Main, #0) when the game starts and
+		; on every restart. ScummVM will overwrite the value we set here for global90,
+		; so it's an ideal place to set BOTH (3) as our default message mode. It works
+		; on DOS and also honors ScummVM's audio/subtitles settings.
+;;;		(= global90 1)
+		(= global90 3)
+		; END OF TEXT&SPEECH CHANGE
 		(= gLb2Win (ScriptID 0 9))
 		(= temp0 (FileIO fiOPEN {version} 1))
 		(FileIO fiREAD_STRING global27 11 temp0)

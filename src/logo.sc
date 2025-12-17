@@ -43,7 +43,6 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
-				(= global90 3)
 				(Palette palSET_INTENSITY 0 254 0)
 				(global2 drawPic: 105 10)
 				(= cycles 1)

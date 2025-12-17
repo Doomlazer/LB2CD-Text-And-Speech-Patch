@@ -159,6 +159,14 @@
 		(if (& global90 $0002)
 			(= temp201 (Memory memALLOC_CRIT 12))
 			(Message msgLAST_MESSAGE temp201)
+		; TEXT&SPEECH CHANGE: Prevent using an uninitialized temp201 in message mode 1.
+		;
+		; Now we use temp201 for all the messages, but the variable isn't initialized
+		; while using TEXT message mode (1). It works but ScummVM's debugger gives us
+		; warnings. We give temp201 the 0 value if TEXT message mode is enabled.
+		else
+			(= temp201 0)
+		; END OF TEXT&SPEECH CHANGE
 		)
 		(if
 			(and
@@ -170,7 +178,8 @@
 			)
 			(if (!= (= temp0 (self findTalker: temp0)) -1)
 				(talkerSet add: temp0)
-				;; Thnx Kawa https://sciprogramming.com/community/index.php?topic=1577.msg8632#msg8632
+				; TEXT&SPEECH CHANGE: Combine text + speech on messages.
+				; Thnx Kawa https://sciprogramming.com/community/index.php?topic=1577.msg8632#msg8632
 				(temp0 modNum: param1 say: @temp1 temp201 self param1 param2 param3 param4 param5)
 ;;;				(if (& global90 $0002)
 ;;;					(temp0 modNum: param1 say: temp201 self)
@@ -180,6 +189,7 @@
 ;;;						say: @temp1 self param1 param2 param3 param4 param5
 ;;;					)
 ;;;				)
+				; END OF TEXT&SPEECH CHANGE
 				(++ curSequence)
 			else
 				(if gNewEventHandler

@@ -134,12 +134,22 @@
 	)
 	
 	(method (init)
-		(if (DoSound sndGET_AUDIO_CAPABILITY)
-			;(= global90 2)
-			(= global90 3)
-		else
+		; TEXT&SPEECH CHANGES: Don't let rm100:init change global90's value.
+		;
+		; We want to keep global90's value set by lb2Initcode:init (#14). Setting a new
+		; value here is unnecessary and conflicts with ScummVM's audio/subtitles
+		; settings, though we'll still retain the test to enforce TEXT message mode (1)
+		; when there isn't digital audio support. Reference:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
+;;;		(if (DoSound sndGET_AUDIO_CAPABILITY)
+;;;			(= global90 2)
+;;;		else
+;;;			(= global90 1)
+;;;		)
+		(if (not (DoSound sndGET_AUDIO_CAPABILITY))
 			(= global90 1)
 		)
+		; END OF TEXT&SPEECH CHANGE
 		(proc958_0 128 108 151 101)
 		(proc958_0 132 100 20 23)
 		(proc958_0 130 964)
