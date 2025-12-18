@@ -708,14 +708,16 @@
 
 ; WORKAROUND: Prevent WrapMusic issues after recompilation.
 ;
-; SCICompanion compiles the LB2 Main script with the class value 0x2E for
+; SCICompanion compiles LB2's Main script with the class value 0x2E for
 ; WrapMusic, which breaks calls from other recompiled scripts reliant on
-; WrapMusic. Changing the order that these classes appear in Main assigns the
-; expected 0x86 value to WrapMusic in the Main.sco file which, in turn passes
-; the correct value to other scripts that require 'WrapMusic' at compile time.
-; We still can't compile 0.scr to produce a working Main script patch, but
-; other scripts can now be successfully compiled without the need for hex
-; editing the patch files.
+; WrapMusic. Changing the order that the Actions and WrapMusic classes appear
+; in Main assigns the expected 0x86 value to WrapMusic in the Main.sco file
+; which, in turn passes the correct value to other scripts that require
+; WrapMusic at compile time. We still can't compile 0.scr to produce a
+; working Main script patch, but other scripts can now be successfully
+; compiled without the need for hex editing the patch files.
+;
+; We work around this by moving the Actions class before the WrapMusic one.
 (class Actions of Code ; Actions class moved before WrapMusic.
 	(properties)
 	
@@ -796,10 +798,11 @@
 			; chimes in certain situations depending on fades, the game's speed and the
 			; system clock's value.
 			;
-			; Fixed by making WrapMusic:cue always store 127 in the vol property.
-			; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12356
+			; Fixed by making WrapMusic:cue always store 127 in the vol property, hex
+			; editing 0.scr according to:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12356
 ;;;			(else (= vol (wrapSound vol?)))
-			(else (= vol 127)) ; always be 127
+			(else (= vol 127))
 			; END OF BUGFIX
 		)
 	)
@@ -817,14 +820,14 @@
 	)
 	
 	; WORKAROUND: Prevent WrapMusic issues after recompilation (continued).
-;;;	(class Actions of Code ; We don't want Actions to be after WrapMusic
+;;;	(class Actions of Code ; disable Actions here, now it's before WrapMusic
 ;;;		(properties)
 ;;;
 ;;;		(method (doVerb)
 ;;;			(return 0)
 ;;;		)
 ;;;	)
-	; END OF WORKAROUND (see also right before the WrapMusic class)
+	; END OF WORKAROUND (see also the code right before the WrapMusic class)
 )
 
 (instance stopGroop of Grooper
@@ -924,7 +927,9 @@
 		;
 		; We want to keep global90's value set by lb2Initcode:init (#14). Setting a new
 		; value here is unnecessary and conflicts with ScummVM's audio/subtitles settings.
-		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
+		;
+		; We disable "(= global90 2)" hex editing 0.scr according to:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
 ;;;		(= global90 2)
 		; END OF TEXT&SPEECH CHANGE
 		((ScriptID 15 0) init:)
@@ -1367,12 +1372,12 @@
 		; The base restrictions are a list of 14 rooms here in LB2:handsOn. Some of these
 		; rooms and additional ones also have calls to "(gIconBar disable: 7)" that need
 		; to be re-enabled per room. Lastly, they removed the code that re-enables access
-		; to the control panel when an inset is disposed (on Inset:dispose, #923), which
+		; to the control panel when an inset is disposed (in Inset:dispose, #923), which
 		; has the side effect of disabling the control panel in ANY room after an inset
-		; has been disposed (the control panel is always disabled when an inset is set).
+		; has been disposed (the control panel is always disabled while an inset is set).
 		;
-		; In this script file we remove the base control panel restrictions.
-		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11175
+		; We remove the base control panel restrictions, hex editing 0.scr according to:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11175
 ;;;		(if
 ;;;			(proc999_5
 ;;;				gNumber
@@ -1396,7 +1401,7 @@
 		; END OF IMPROVEMENT (see also Inset:dispose in #923 and the script files of
 		; rooms 310, 441, 454, 520, 550, 610, 700, and 710)
 		
-		; BUGFIX: Prevent displaying hands-off cursor when the player has control.
+		; BUGFIX: Fix hands-off cursor being displayed when the player has control.
 		;
 		; When speech is enabled, the game often shows the hands-off cursor when the
 		; player has control. The Narrator records and restores the cursor being used,
@@ -1406,7 +1411,8 @@
 		;
 		; This fix makes handsOn detect if a Narrator is saying a message, updating its
 		; saveCursor to the correct cursor when that's the case.
-		; Ported from: https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11279
+		; Hex edited 0.scr according to:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11279
 		(if (and gNewEventHandler (gNewEventHandler at: 0))
 			(= global97 (gNewEventHandler at: 0))
 			(if gGIconBarCurIcon
