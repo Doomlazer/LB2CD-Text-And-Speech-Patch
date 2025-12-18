@@ -1454,35 +1454,52 @@
 	)
 	
 	(method (showAbout)
-		(if
-			(or
-				(== global123 2)
-				(proc999_5
-					gNumber
-					435
-					440
-					450
-					454
-					455
-					520
-					521
-					525
-					550
-					560
-					565
-					620
-					630
-					650
-					700
-					710
-					715
-					720
-				)
-			)
-			(gLb2Messager say: 11 0 0 0 0 0)
-		else
+		; IMPROVEMENT: Remove fake memory limitation to show the about screen.
+		;
+		; If the player tries to show the about screen in certain situations, a
+		; message will appear telling there isn't enough memory to show it.
+		; That's actually a lie, the game doesn't really have a memory test for
+		; that, and that restriction is a test that checks if the current act is
+		; act 2 or if the current room is in this list of rooms.
+		;
+		; Displaying the about screen uses around 264 bytes of heap, which aren't
+		; always correctly freed after it's disposed, but changing rooms manages
+		; to free them every time. Nonetheless, 264 bytes temporarily used don't
+		; seem relevant enough to justify such a strange restriction.
+		;
+		; We disable the fake "memory test". We've not observed any issues after
+		; testing the about screen in most of these rooms. We've hex edited 0.scr
+		; at 0x0DEE changing "89 7B" (lsg global123) to "33 5A" (jmp 90 bytes).
+;;;		(if
+;;;			(or
+;;;				(== global123 2)
+;;;				(proc999_5
+;;;					gNumber
+;;;					435
+;;;					440
+;;;					450
+;;;					454
+;;;					455
+;;;					520
+;;;					521
+;;;					525
+;;;					550
+;;;					560
+;;;					565
+;;;					620
+;;;					630
+;;;					650
+;;;					700
+;;;					710
+;;;					715
+;;;					720
+;;;				)
+;;;			)
+;;;			(gLb2Messager say: 11 0 0 0 0 0) ; "There is not enough memory available right now to show the about screen."
+;;;		else
 			((ScriptID 13 0) doit:)
-		)
+;;;		)
+		; END OF IMPROVEMENT
 	)
 )
 
