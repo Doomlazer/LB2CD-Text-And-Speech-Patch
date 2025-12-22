@@ -459,7 +459,23 @@
 				(if (not (== global123 5)) (WrapMusic pause: 0))
 				(gGame handsOn: 1)
 				(southExitFeature init:)
-				(gIconBar enable: 1 2 6 5)
+				; BUGFIX: Don't let sOutTapestry enable the inventory icon when there is none.
+				;
+				; sHideInTapestry disables the IconBar icons 1, 2, 6 and 5, and the appropiate
+				; cursors. sOutTapestry enables them back, "5" being the inventory item icon.
+				; If the player doesn't have any inventory item chosen (this can happen if
+				; they've recently used an item and it got removed from the inventory),
+				; disabling it will do nothing, as it was already disabled, but sOutTapestry
+				; will enable the generic grey arrow cursor instead. The player will feel
+				; tempted to try out the cursor, but clicking while it's active will make the
+				; game crash instead. Moving to another room properly resets the cursors.
+				;
+				; We fix it by testing if there's any current inventory icon before enabling
+				; the 5th icon.
+;;;				(gIconBar enable: 1 2 6 5)
+				(gIconBar enable: 1 2 6)
+				(if (gIconBar curInvIcon?) (gIconBar enable: 5))
+				; END OF BUGFIX
 				(self dispose:)
 			)
 		)
