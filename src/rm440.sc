@@ -154,7 +154,21 @@
 					(pEvent claimed: 1)
 					(gEgo setScript: sOutTapestry)
 				)
+				; BUGFIX: Fix rm440's event handler not passing evVERB events.
+				;
+				; rm440 and rm448 (in #448) use their own handleEvent methods to handle
+				; joystick events, overriding their default event handlers, but only pass
+				; evMOVE events to super:handleEvent blocking the other event types. Clicking
+				; on the rooms themselves (ex: the floor) while using any verb does nothing.
+				;
+				; Here we fix it in rm440:handleEvent by letting it pass both evMOVE and evVERB
+				; events. SCICompanion's sci.sh doesn't define any evMOVEVERB, so we directly
+				; use the $5000 value (evMOVE is $1000 and evVERB $4000, both of them = $5000).
+				; Ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12001
+;;;				((& (pEvent type?) evMOVE) (super handleEvent: pEvent))
 				((& (pEvent type?) $5000) (super handleEvent: pEvent))
+				; END OF BUGFIX (see also rm448:handleEvent, in #448)
 				(else (return 0))
 			)
 		)
