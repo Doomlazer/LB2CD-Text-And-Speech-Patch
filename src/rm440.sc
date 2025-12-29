@@ -152,7 +152,30 @@
 						(== (gEgo view?) 443)
 					)
 					(pEvent claimed: 1)
-					(gEgo setScript: sOutTapestry)
+					; BUGFIX: Prevent soflock after unhiding from the tapestry during the chase
+					; in act 5.
+					;
+					; If Laura is hiding in the tapestry during the chase in act 5 and the
+					; player clicks to unhide right before pursuitTimer expires, sOutTapestry
+					; will be attached to gEgo and sHeKills will then be attached to the room
+					; while sOutTapestry is ongoing and Laura is animating. When this is
+					; correctly timed, the murderer will move next to Laura, the killing
+					; animation won't occur and the game will end up softlocked while the
+					; murderer and Laura stand still doing nothing.
+					;
+					; The cause is that sHeKills is attached to the room but sOutTapestry is
+					; attached to gEgo, and being attached to different objects makes them able
+					; to run simultaneously, conflicting with each other. This wouldn't happen
+					; if both were attached to the current room. rm440:notify is called when
+					; pursuitTimer expires, which in turn attaches sHeKills to the current
+					; room if it doesn't already have a script attached, but if it has,
+					; sHeKills is queued next, making them run sequentially without issues.
+					;
+					; We fix it by attaching sOutTapestry to the current room instead (global2).
+					; This also needs to be done in rm440:doVerb.
+					;(gEgo setScript: sOutTapestry)
+					(global2 setScript: sOutTapestry)
+					; END OF BUGFIX (see also rm440:doVerb)
 				)
 				; BUGFIX: Fix rm440's event handler not passing evVERB events.
 				;
@@ -178,7 +201,15 @@
 		(switch theVerb
 			(3
 				(if (== (gEgo view?) 443)
-					(gEgo setScript: sOutTapestry)
+					; BUGFIX: Prevent soflock after unhiding from the tapestry during the chase
+					; in act 5 (continued).
+					;
+					; Continuation of the first bugfix described in rm440:handleEvenent.
+					;
+					; We fix it by attaching sOutTapestry to the current room instead (global2).
+					;(gEgo setScript: sOutTapestry)
+					(global2 setScript: sOutTapestry)
+					; END OF BUGFIX (see also rm440:handleEvent)
 				else
 					((ScriptID 441 4) seconds: 1)
 				)
