@@ -815,24 +815,53 @@
 	
 	(method (onMe param1)
 		(if (super onMe: param1)
+			; BUGFIX: Correct the areas of every armor and make ego properly turn towards
+			; them.
+			;
+			; genericArmor uses the fuschia control color, and compares mouse coordinates
+			; with hardcoded areas in this onMe method, so it can pretend being multiple
+			; objects by changing its noun and display different messages depending where
+			; the player clicks on. The gX and gY globals are used to determine the mouse
+			; coordinates, and gY takes into account the 10 extra pixels at the top used
+			; for the iconbar in addition to the room's height (the top-left of the room
+			; would be gY 10 gX 0). They didn't pay attention to this so all the y values
+			; for the areas are wrong by 10 pixels above their intended place. As a
+			; result, clicking on the greaves of the armors is handled by rm440 instead.
+			;
+			; Additionally, when using a verb on a Feature, ego will head towards it
+			; depending on its x and y properties (these only take the room into account,
+			; the 10 extra pixels of the iconbar are irrelevant). genericArmor has y set
+			; but not x, so x will default to 0, making ego always face towards y 160 x 0
+			; no matter what armor you click on. This looks fine for the armors on the
+			; left, but totally wrong for those on the right. Lastly, the 160 value set
+			; for y is more or less centered to cover all the armors, looks passable but
+			; could be better, since the angle is calculated from ego's origin to the
+			; target's origin, being ego's origin centered for the x axis but at the
+			; bottom for the y one.
+			;
+			; We move the armors' areas 10 pixels down on the y axis to make them accurate
+			; plus other slight adjustments. We make genericArmor's x and y properties
+			; change depending on what armor has been clicked on, that way ego will head
+			; towards every armor in a more convincing manner.
 			(cond 
-				(
-				(and (< 59 gX) (< gX 70) (< 83 gY) (< gY 143)) (= noun 24))
-				(
-				(and (< 72 gX) (< gX 84) (< 91 gY) (< gY 143)) (= noun 25))
-				(
-				(and (< 86 gX) (< gX 100) (< 93 gY) (< gY 143)) (= noun 26))
-				(
-				(and (< 103 gX) (< gX 110) (< 105 gY) (< gY 134)) (= noun 27))
-				(
-				(and (< 115 gX) (< gX 130) (< 104 gY) (< gY 149)) (= noun 28))
-				(
-				(and (< 171 gX) (< gX 185) (< 96 gY) (< gY 135)) (= noun 30))
-				(
-				(and (< 187 gX) (< gX 201) (< 91 gY) (< gY 137)) (= noun 31))
-				(
-				(and (< 225 gX) (< gX 256) (< 97 gY) (< gY 188)) (= noun 32))
+;;;				((and (< 59 gX 70) (< 83 gY 143)) (= noun 24))
+				((and (< 50 gX 70) (< 93 gY 153)) (self x: 60 y: 143 noun: 24))
+;;;				((and (< 72 gX 84) (< 91 gY 143)) (= noun 25))
+				((and (< 70 gX 84) (< 101 gY 153)) (self x: 77 y: 143 noun: 25))
+;;;				((and (< 86 gX 100) (< 93 gY 143)) (= noun 26))
+				((and (< 84 gX 100) (< 103 gY 153)) (self x: 92 y: 143 noun: 26))
+;;;				((and (< 103 gX 110) (< 105 gY 134)) (= noun 27))
+				((and (< 103 gX 110) (< 115 gY 144)) (self x: 106 y: 134 noun: 27))
+;;;				((and (< 115 gX 130) (< 104 gY 149)) (= noun 28))
+				((and (< 112 gX 131) (< 114 gY 159)) (self x: 122 y: 149 noun: 28))
+;;;				((and (< 171 gX 185) (< 96 gY 135)) (= noun 30))
+				((and (< 171 gX 185) (< 106 gY 145)) (self x: 178 y: 135 noun: 30))
+;;;				((and (< 187 gX 201) (< 91 gY 137)) (= noun 31))
+				((and (< 185 gX 201) (< 101 gY 147)) (self x: 193 y: 137 noun: 31))
+;;;				((and (< 225 gX 256) (< 97 gY 188)) (= noun 32))
+				((and (< 220 gX 256) (< 107 gY 198)) (self x: 238 y: 188 noun: 32))
 			)
+			; END OF BUGFIX
 		)
 	)
 )
@@ -852,28 +881,41 @@
 	
 	(method (onMe param1)
 		(if (super onMe: param1)
+			; BUGFIX: Correct the areas of every flag and make ego properly turn towards
+			; them.
+			;
+			; Exact same issue described in genericArmor:onMe but for the flags. They
+			; didn't take into account the 10 extra pixels that are added for the iconbar
+			; and are relevant for the mouse coordinates.
+			;
+			; We move the flags' areas 10 pixels down on the y axis to make them accurate
+			; plus other slight adjustments. We make genericFlag's x property dynamic,
+			; changing whenever the player clicks on the red control color. That way ego
+			; will head towards every flag in a more convincing manner.
+			(= x gX) ; dynamic x
 			(cond 
-				(
-				(and (<= 45 gX) (<= gX 130) (<= 0 gY) (<= gY 23)) (= noun 14))
-				(
-				(and (<= 76 gX) (<= gX 116) (<= 25 gY) (<= gY 43)) (= noun 15))
-				(
-				(and (<= 92 gX) (<= gX 117) (<= 44 gY) (<= gY 54)) (= noun 16))
-				(
-				(and (<= 95 gX) (<= gX 119) (<= 56 gY) (<= gY 72)) (= noun 17))
-				(
-				(and (<= 99 gX) (<= gX 118) (<= 72 gY) (<= gY 82)) (= noun 18))
-				(
-				(and (<= 106 gX) (<= gX 123) (<= 83 gY) (<= gY 95)) (= noun 19))
-				(
-				(and (<= 154 gX) (<= gX 177) (<= 64 gY) (<= gY 77)) (= noun 20))
-				(
-				(and (<= 148 gX) (<= gX 191) (<= 39 gY) (<= gY 62)) (= noun 21))
-				(
-				(and (<= 139 gX) (<= gX 198) (<= 0 gY) (<= gY 38)) (= noun 22))
-				(
-				(and (<= 215 gX) (<= gX 270) (<= 0 gY) (<= gY 20)) (= noun 23))
+;;;				((and (<= 45 gX 130) (<= 0 gY 23)) (= noun 14))
+				((and (<= 45 gX 130) (<= 10 gY 33)) (= noun 14))
+;;;				((and (<= 76 gX 116) (<= 25 gY 43)) (= noun 15))
+				((and (<= 76 gX 116) (<= 35 gY 53)) (= noun 15))
+;;;				((and (<= 92 gX 117) (<= 44 gY 54)) (= noun 16))
+				((and (<= 92 gX 117) (<= 54 gY 64)) (= noun 16))
+;;;				((and (<= 95 gX 119) (<= 56 gY 72)) (= noun 17))
+				((and (<= 95 gX 119) (<= 66 gY 82)) (= noun 17))
+;;;				((and (<= 99 gX 118) (<= 72 gY 82)) (= noun 18))
+				((and (<= 99 gX 118) (<= 82 gY 92)) (= noun 18))
+;;;				((and (<= 106 gX 123) (<= 83 gY 95)) (= noun 19))
+				((and (<= 106 gX 123) (<= 93 gY 105)) (= noun 19))
+;;;				((and (<= 154 gX 177) (<= 64 gY 77)) (= noun 20))
+				((and (<= 154 gX 177) (<= 74 gY 87)) (= noun 20))
+;;;				((and (<= 148 gX 191) (<= 39 gY 62)) (= noun 21))
+				((and (<= 148 gX 191) (<= 49 gY 72)) (= noun 21))
+;;;				((and (<= 139 gX 198) (<= 0 gY 38)) (= noun 22))
+				((and (<= 139 gX 198) (<= 10 gY 48)) (= noun 22))
+;;;				((and (<= 215 gX 270) (<= 0 gY 20)) (= noun 23))
+				((and (<= 215 gX 270) (<= 10 gY 33)) (= noun 23))
 			)
+			; END OF BUGFIX
 		)
 	)
 )
