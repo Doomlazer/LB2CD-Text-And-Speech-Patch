@@ -228,7 +228,27 @@
 						(global2 script?)
 						(not (== (global2 script?) (ScriptID 444 0)))
 					)
-					((global2 script?) next: (ScriptID 444 0))
+					; BUGFIX: Prevent crash while exiting room 440 during the chase in act 5
+					; (East and South exits).
+					;
+					; If pursuitTimer expires in this room during the chase in act 5,
+					; rm440:notify will be called, which in turn will attach sHeKills to the
+					; room to kill the player. If any other script is already attached, sHeKills
+					; is queued next instead to let the current script finish. But if the timer
+					; expires while the ongoing script is sExitEast or sExitSouth, sHeKills will
+					; be queued right before changing rooms, consistently crashing the game.
+					;
+					; We fix it by modifying rm440:notify to test if sExitEast or sExitSouth are
+					; attached to the current room, if so we avoid queueing sHeKills next and
+					; start pursuitTimer again instead, but with a couple of seconds so it
+					; immediately expires in the next room.
+;;;					((global2 script?) next: (ScriptID 444 0))
+					(if (proc999_5 (global2 script?) sExitEast sExitSouth) ; OneOf, are sExitEast or sExitSouth attached to the current room?
+						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
+					else
+						((global2 script?) next: (ScriptID 444 0)) ; queue sHeKills next
+					)
+					; END OF BUGFIX
 				else
 					(global2 setScript: (ScriptID 444 0))
 				)
