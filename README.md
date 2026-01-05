@@ -14,16 +14,16 @@ The game begins with both speech and text enabled. Click the MODE button in the 
 
 * Patches 0.scr and 923.scr remove the base control panel restrictions.
 * Additional patches remove 'per room' control panel restrictions: 310.scr, 441.scr, 454.scr, 520.scr, 550.scr, 610.scr, 700.scr, and 710.scr.
-* Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control" and "Music volume can get permanently lowered down by clock chimes".
+* Patch 0.scr also fixes an issue with "The hands-off cursor is often displayed when the player has control", "Music volume can get permanently lowered down by clock chimes" and "Showing the about screen has a fake memory limitation".
 * Patch 90.scr fixes an issue with "Yvette responds with the wrong message when asking her about Tut in acts 3+".
 * Patch 99.scr enables the previously unused Death Message speech. This patch is optional.
 * Patch 110.scr fixes an issue with "The music can abruptly change during the intro".
 * Patch 230.scr fixes an issue that made the leftmost reporter answer as the one next to him, wrong voice included.
-* Patch 250.scr fixes an issue with 'Endless taxi driving', 'Taxi drive prematurely ends' and 'Laura's messages stop the street animation during the taxi drive'.
+* Patch 250.scr fixes an issue with 'Endless taxi driving', 'Taxi drive prematurely ends' and 'Laura's messages pause the street animation during the taxi drive'.
 * Patch 310.scr also has a minor improvement that prevents a crash if one teleports into the room in debug mode and then uses the south exit.
 * Patch 350.scr fixes a bug that can softlock the game while entering the museum.
 * Patch 420.scr fixes a bug that can cause timers to break from act 5 onwards.
-* Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events'.
+* Patch 440.scr fixes an issue with 'Armor rooms don't handle verb events', 'Unhiding from the tapestry enables the inventory icon even when there isn't any active inventory item, which can crash the game', 'Hiding in the tapestry or unhiding can softlock the game during the chase in act 5', 'Exiting the Armor Room during the chase in act 5 using the South or East exits can crash the game', 'The areas for clicking the armors and flags are 10 pixels off on the y axis' and 'Laura doesn't properly head towards all the armors and flags'.
 * Patch 448.scr fixes an issue with 'Crash/freeze due to stack overflow during act 5', 'Incorrect transom re-initialization', 'Out of sync transom's animation speed' and 'Armor rooms don't handle verb events'.
 * Patch 454.scr also fixes an issue with 'Lock when interacting with lid of open coffin during act 5' and 'Glitchy animation when closing the left coffin'.
 * Patch 460.scr fixes an issue with "Lock when trying to pass through the eastern door after swinging the crate".
