@@ -782,12 +782,38 @@
 								(== (== ((ScriptID 90 1) room?) 440) 0)
 							)
 						)
+						; BUGFIX: Prevent softlock when hiding in the tapestry during the chase in
+						; act 5.
+						;
+						; If the player clicks to hide in the tapestry at the right moment, just
+						; before pursuitTimer expires, sHeKills can get attached to the current
+						; room a fraction of a second before sHideInTapestry. In this specific
+						; situation, sHeKills will be interrupted by sHideInTapestry, but sHeKills
+						; has enough time to call handsOff before this happens. sHideInTapestry
+						; also puts handsOff when it starts, so at this point we'll be in double
+						; handsOff. The handsOff at the end of sHideInTapestry will only revert one
+						; of the handsOffs. As a result, sHeKills will never happen and the player
+						; will be left with the DO cursor but without control, softlocked while
+						; Laura remains hidden in the tapestry.
+						;
+						; We fix it by testing if sHeKills isn't attached to the current room, if
+						; it is we don't set sHideInTapestry.
+;;;						(if
+;;;							(or (== global123 5) (MuseumRgn nobodyAround:))
+;;;								(global2 setScript: sHideInTapestry)
+;;;						else
+;;;							(return 1)
+;;;						)
 						(if
-						(or (== global123 5) (MuseumRgn nobodyAround:))
+							(and
+								(or (== global123 5) (MuseumRgn nobodyAround:)) ; are we in act 5 or there's nobody around?
+								(!= (global2 script?) (ScriptID 444 0)) ; is sHeKills not attached to the current room?
+							)
 							(global2 setScript: sHideInTapestry)
 						else
 							(return 1)
 						)
+						; END OF BUGFIX
 					else
 						(super doVerb: theVerb &rest)
 					)
