@@ -1020,30 +1020,41 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(1
-				(if (== global123 5)
-					(gLb2Messager say: 38)
-				else
-					(gLb2Messager say: 10 1 2)
-				)
+		; TWEAK: Simplify armorPippin:doVerb and remove repetition.
+;;;		(switch theVerb
+;;;			(1
+;;;				(if (== global123 5)
+;;;					(gLb2Messager say: 38)
+;;;				else
+;;;					(gLb2Messager say: 10 1 2)
+;;;				)
+;;;			)
+;;;			(4
+;;;				(if (== global123 5)
+;;;					(gLb2Messager say: 38)
+;;;				else
+;;;					(gLb2Messager say: 10 4 2)
+;;;				)
+;;;			)
+;;;			(8
+;;;				(if (== global123 5)
+;;;					(gLb2Messager say: 38)
+;;;				else
+;;;					(gLb2Messager say: 10 8 2)
+;;;				)
+;;;			)
+;;;			(else  (super doVerb: theVerb))
+;;;		)
+		(if (proc999_5 theVerb 1 4 8) ; OneOf theVerb 1 4 8
+			(if (== global123 5)
+				(gLb2Messager say: 38)
+			else
+				(gLb2Messager say: 10 theVerb 2)
 			)
-			(4
-				(if (== global123 5)
-					(gLb2Messager say: 38)
-				else
-					(gLb2Messager say: 10 4 2)
-				)
-			)
-			(8
-				(if (== global123 5)
-					(gLb2Messager say: 38)
-				else
-					(gLb2Messager say: 10 8 2)
-				)
-			)
-			(else  (super doVerb: theVerb))
+		else
+			(super doVerb: theVerb)
 		)
+		; END OF TWEAK
 	)
 )
 
