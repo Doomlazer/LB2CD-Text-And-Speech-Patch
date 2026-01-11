@@ -279,16 +279,37 @@
 				(if (== (gEgo view?) 443) (gIconBar disable: 1 2 6 5))
 				(gGame handsOff:)
 				(proc958_0 128 820 814)
-				((ScriptID 90 2) moveTo: 440)
+				; BUGFIX & TWEAK: Fix Olympia's view being shown during a fraction of a
+				; second when her meeting with Heimlich starts, and tweak her starting
+				; position.
+				;
+				; Right when Heimlich and Olympia meeting starts, the clock chimes, and
+				; aOlympia (from #90) is moved to the room in state 1 of this instance of
+				; Script. When this happens Olympia's view can be seen for a fraction of a
+				; second at the bottom of the room (mainly her head), before she's fully
+				; positioned offscreen in state 2.
+				;
+				; It's also possible to see one pixel of her view next to the door while
+				; the clock is chiming and she's still not supposed to be there. It's a
+				; very minor detail but improving it is a trivial change.
+				;
+				; We prevent her view from being shown before intended by calling aOlympia's
+				; moveTo method in state 2 instead of in state 1, in the same ScriptID call
+				; used to position her offscreen. We move her +1 pixel to the right to hide
+				; the visible pixel.
+;;;				((ScriptID 90 2) moveTo: 440) ; aOlympia
 				(= cycles 1)
 			)
 			(2
-				((ScriptID 90 2)
+				((ScriptID 90 2) ; aOlympia
 					loop: 1
 					setScale: Scaler 155 0 190 90
-					x: 228
+;;;					x: 228
+					x: 229 ; +1 pixel to the right, hides a visible pixel
 					y: 133
+					moveTo: 440 ; move now to room 440
 				)
+				; END OF BUGFIX & TWEAK
 				(if ((ScriptID 90 2) scaler?)
 					(((ScriptID 90 2) scaler?) doit:)
 				)
