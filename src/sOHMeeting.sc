@@ -141,7 +141,24 @@
 			(3 0)
 			(4 (= seconds 1))
 			(5
-				((ScriptID 32 0) dispose:)
+				; BUGFIX: Fix Laura being unable to hide in the tapestry after Olympia's
+				; meeting with Heimlich.
+				;
+				; When Olympia's meeting with Heimlich ends, both leave through the East door
+				; but the room property of aHeimlich keeps being 440. In the case of aOlympia,
+				; when the meeting ends its room property is changed to 430 in sMeetingNo2's
+				; state 7 (in #440), and then the actor is put to wander. aHeimlich's room
+				; property isn't changed. This normally wouldn't be a big deal, but in this
+				; case Laura won't be able to hide in room 440's tapestry after both have
+				; left, as hiding requires a "(MuseumRgn nobodyAround:)" test to pass, and it
+				; won't return true because aHeimlich "is still in the room". This gets
+				; corrected after re-entering the room.
+				;
+				; We fix it by manually setting aHeimlich's room property to 350 (default)
+				; once the meeting ends. Any value except 440 fixes it.
+;;;				((ScriptID 32 0) dispose:)
+				((ScriptID 32 0) room: 350 dispose:) ; aHeimlich
+				; END OF BUGFIX
 				(self dispose:)
 			)
 		)
