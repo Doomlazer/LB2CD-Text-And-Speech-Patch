@@ -113,7 +113,7 @@
 				((ScriptID 90 1) setMotion: PolyPath 122 154 self)
 				(= ticks 480)
 			)
-			;(3 (gIconBar disable: 7))
+;;;			(3 (gIconBar disable: 7)) ; IMPROVEMENT: Remove control panel restriction
 			(4 (self dispose:))
 		)
 	)
@@ -158,6 +158,31 @@
 				(countTimer dispose:)
 				(gGameMusic2 fade:)
 				(WrapMusic pause: 0)
+				; BUGFIX: Fix cursor not changing to a down arrow when hovering over the
+				; South exit after the countess' meeting.
+				;
+				; In #440, southExitFeature makes the cursor change to a down arrow when
+				; hovering over the bottom part of the room. Hiding in the tapestry
+				; disposes the Feature making the cursor no longer change, and unhiding
+				; from it initializes it back again.
+				;
+				; sOutTapestry, also in #440, is the script that triggers the unhiding
+				; animation and initializes southExitFeature, but it behaves differently
+				; during the countess' meeting. In state 2 it attaches the sTalkWithCountess
+				; script to gEgo and disposes itself before having the chance to initialize
+				; southExitFeature in state 3. That's the expected behavior, but the issue
+				; is that southExitFeature isn't initialized when the meeting is over,
+				; either, making the cursor no longer change to the down arrow one anymore.
+				; This problem only occurs when the player unhides before the countess
+				; leaves the room, and things return to normal after re-entering the room.
+				;
+				; We fix it by testing if Laura isn't hidden behind the tapestry (view 443)
+				; when the countess leaves, if she isn't we attach sOutTapestry to the room,
+				; but only executing its third state to initialize southExitFeature.
+				(if (!= (gEgo view?) 443)
+					(global2 setScript: ((ScriptID 440 1) changeState: 3)) ; sOutTapestry
+				)
+				; END OF BUGFIX
 				(gIconBar enable: 7)
 				(self dispose:)
 				(DisposeScript 441)
@@ -181,7 +206,7 @@
 				(proc0_3 120)
 				(countTimer setReal: countTimer 15)
 				(gGame handsOn: 1)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
