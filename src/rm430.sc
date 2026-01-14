@@ -82,6 +82,16 @@
 		(westDoor init: stopUpd: doubleDoor: westDoor2)
 		(eastDoor
 			forceOpen: (if (proc0_2 99) 0 else 1)
+			; BUGFIX: Fix eastDoor always initializing unlocked.
+			;
+			; eastDoor always initializes unlocked, even when the door is wired shut.
+			; There are other issues with this door that we cover in eastDoor:doVerb.
+			;
+			; We fix it by making its locked property match the value of the wired shut
+			; flag (flag 45). Fix based on:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11543
+			locked: (proc0_2 45) ; IsFlag 45 (door is wired shut)
+			; END OF BUGFIX (see also eastDoor:doVerb)
 			init:
 			stopUpd:
 			doubleDoor: eastDoor2
@@ -601,17 +611,39 @@
 	
 	(method (doVerb theVerb)
 		(switch theVerb
-			(44
+			; BUGFIX: Fix various issues with eastDoor when it's wired shut.
+			;
+			; The game uses 2 flags to determine if eastDoor is closed or wired shut.
+			; Flag 99 is used when it's closed, 45 when it's wired shut. There are three
+			; problems with how these flags are used:
+			;
+			; 1) Using the wire on an opened door sets the flag 45 but not 99.
+			;
+			; 2) The door is always initialized unlocked, no matter if flag 45 is set.
+			;
+			; 3) Using the DO verb on the closed door clears flag 99 even when wired shut.
+			;
+			; We fix 1 by always setting flag 99 when the wire is used on it in act 5. We
+			; fix 2 in rm430:init, making eastDoor initialize with its locked property
+			; matching the value of flag 45. Finally, we fix 3 by testing if the door is
+			; unlocked when using the DO verb on it, to allow setting or clearing flag 99
+			; only if it's unlocked. Fixes based on:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11543
+			(44 ; wire
 				(if (== global123 5)
 					(global2 setScript: sWireItShut)
+					(proc0_3 99) ; SetFlag 99 (door is closed)
 				else
 					(super doVerb: theVerb &rest)
 				)
 			)
-			(4
-				(if (== doorState 0) (proc0_4 99) else (proc0_3 99))
+			(4 ; DO
+				(if (not locked) ; is the door unlocked?
+					(if (== doorState 0) (proc0_4 99) else (proc0_3 99))
+				)
 				(super doVerb: theVerb &rest)
 			)
+			; END OF BUGFIX (see also rm430:init)
 			(else 
 				(super doVerb: theVerb &rest)
 			)
