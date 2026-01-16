@@ -130,9 +130,24 @@
 		(and (== global123 3) (not (proc0_10 -20222)))
 			((ScriptID 22 0) doit: -20222)
 		)
-		(cond 
+		(cond
+			; BUGFIX: Prevent sDie being interrupted by sGetThatWire
+			;
+			; If the player doesn't have the wire in act 5 and uses the pliers to get it
+			; in rm435, pursuitTimer can expire right when the game returns to rm430,
+			; depending on the timing. In that case sDie will be attached to the room as
+			; expected, but sGetThatWire will interrupt it immediately after. The
+			; murderer will not appear, Laura won't die and the timer won't restart.
+			;
+			; We fix it by checking in the cond before anything else if sDie is attached
+			; to the current room. If it is, we do nothing else, letting sDie continue
+			; so it properly kills Laura.
+;;;			((proc0_2 63) (global2 setScript: sGetThatWire) (proc0_4 63))
+;;;			((!= (global2 script?) sDie) (gGame handsOn:))
+			((== (global2 script?) sDie)) ; is sDie attached to the current room? Do nothing.
 			((proc0_2 63) (global2 setScript: sGetThatWire) (proc0_4 63))
-			((!= (global2 script?) sDie) (gGame handsOn:))
+			(else (gGame handsOn:))
+			; END OF BUGFIX
 		)
 	)
 	
