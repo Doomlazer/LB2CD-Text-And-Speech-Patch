@@ -369,15 +369,48 @@
 	
 	(method (changeState newState)
 		(switch (= state newState)
+			; IMPROVEMENT: Kill Laura if the player tries to return to rm420 in act 5.
+			;
+			; When act 5 begins the initial room is rm420, it starts the chase music
+			; and the murderer's entrance, and exiting from it sets pursuitTimer. If
+			; the player returns to that room, everything restarts, every time, and
+			; exiting sets pursuitTimer again. All this causes unexpected things to
+			; happen. It's clear that the player isn't supposed to re-enter that
+			; room in the first place, but Sierra never put any countermeasure to
+			; prevent it from happening. Note that rm420 can only be re-entered from
+			; rm430's East door.
+			;
+			; We approach it by not letting ego pass through rm430's East door
+			; during act 5, moving ego back inside + expiring pursuitTimer whenever
+			; it is attempted. This calls rm430:notify, queueing sDie so it's
+			; attached to the current room next, making the murderer appear and kill
+			; Laura. This is similar to how the player is punished in other rooms.
+;;;			(0
+;;;				(gGame handsOff:)
+;;;				(gEgo heading: 90 setMotion: MoveTo 320 (gEgo y?) self)
+;;;			)
+;;;			(1
+;;;				(gEgo edgeHit: 2)
+;;;				(global2 newRoom: (global2 east?))
+;;;				(self dispose:)
+;;;			)
 			(0
 				(gGame handsOff:)
-				(gEgo heading: 90 setMotion: MoveTo 320 (gEgo y?) self)
+				(if (== global123 5) ; is it act 5?
+					(gEgo heading: 90 setMotion: MoveTo 300 124 self) ; move ego to a safe position to prevent getting stuck
+					((ScriptID 94 1) seconds: 0) ; expire pursuitTimer (will make sDie be queued next)
+				else
+					(gEgo heading: 90 setMotion: MoveTo 320 (gEgo y?) self)
+				)
 			)
 			(1
-				(gEgo edgeHit: 2)
-				(global2 newRoom: (global2 east?))
+				(if (!= global123 5) ; is not act 5?
+					(gEgo edgeHit: 2)
+					(global2 newRoom: (global2 east?))
+				)
 				(self dispose:)
 			)
+			; END OF IMPROVEMENT
 		)
 	)
 )
