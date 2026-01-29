@@ -102,6 +102,19 @@
 			cel: (if (proc0_2 99) 0 else 9)
 			stopUpd:
 			approachVerbs: 4
+			; BUGFIX: Prevent ego from getting stuck near the east exit.
+			;
+			; If Laura is moved near the bottom part of the east exit (approx. at x 309
+			; y 129), she can collide with various pixels of eastDoor2's collision box,
+			; which is a small 4x4 box. This is an annoyance that interrupts ego's
+			; movement, and in the worst cases it can get ego stuck there and softlock
+			; the game. There's no good reason for letting eastDoor2 collide with
+			; actors.
+			;
+			; We fix it by setting eastDoor2's ignoreActors property as true during
+			; initialization to make it not collide with actors.
+			ignoreActors: 1
+			; END OF BUGFIX
 		)
 		(triceratops init:)
 		(spinosaur init:)
