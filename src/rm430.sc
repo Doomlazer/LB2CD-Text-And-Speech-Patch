@@ -167,7 +167,23 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				((global2 script?) next: sDie)
+				; BUGFIX: Prevent pursuitTimer from breaking if it expires during sExitWest.
+				;
+				; In act 5, if pursuitTimer expires when the player is using the west exit
+				; and sExitWest is ongoing, sDie will be queued next, but the queue will be
+				; gone when changing rooms. In this case sDie won't happen and the murderer
+				; will no longer appear.
+				;
+				; We fix this by testing in rm430:notify if sExitWest is attached to the
+				; current room when pursuitTimer expires, if it is we start pursuitTimer
+				; again, but with a couple of seconds so it expires in the next room.
+;;;				((global2 script?) next: sDie)
+				(if (== (global2 script?) sExitWest) ; is sExitWest attached to the room?
+					((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
+				else
+					((global2 script?) next: sDie) ; otherwise queue sDie next
+				)
+				; END OF BUGFIX
 			else
 				(global2 setScript: sDie)
 			)
