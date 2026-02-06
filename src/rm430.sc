@@ -196,25 +196,83 @@
 	
 	(method (changeState newState)
 		(switch (= state newState)
+			; BUGFIX: Replace the 3 seconds wait with something less intrusive
+			; and don't let sDie change state while the door is opening/closing.
+			;
+			; When pursuitTimer expires in act 5, rm430:notify is called, which
+			; attaches sDie to rm430. This is susceptible to issues, as we don't
+			; have control over what's happening in the room when sDie starts.
+			;
+			; sDie's states 1 and 2 test if eastDoor is closed, and state 0 has a
+			; 3 seconds wait. This wait gives the door a bit of time to finish
+			; opening or closing if the door was already cycling when sDie starts,
+			; so the tests are reliable. But this isn't foolproof, the player can
+			; start closing eastDoor at a precise moment before sDie starts, making
+			; it reach states 1 and 2 while the door is still closing. The tests
+			; will fail and let the murderer pass through a closed door.
+			;
+			; We fix this by replacing the 3 seconds wait with a 1 cycle wait and
+			; making state 0 loop if the door is cycling, it's less intrusive and
+			; works more accurately. Since state 0 now loops, we use a check to
+			; only call handsOff when the player has control, and move the
+			; "(eastDoor locked: 0)" line to the next state.
 			(0
-				(gGame handsOff:)
-				(eastDoor locked: 0)
-				(= seconds 3)
+;;;				(gGame handsOff:)
+;;;				(eastDoor locked: 0) ; moved to state 1
+;;;				(= seconds 3)
+				(if (gUser canControl?) (gGame handsOff:)) ; call handsOff if the player has control
+				(if (eastDoor cycler?) (-- state)) ; has eastDoor a cycler attached? repeat this state next
+				(= cycles 1)
 			)
+			; END OF BUGFIX (see also the bugfix below)
+			;
+			; TWEAK+BUGFIX: Prevent handsOff issues in sDie and make the murderer
+			; enter only when Laura has finished moving.
+			;
+			; a) eastDoor inherits its cue method from the Door class, and it has
+			; hansOn(1) calls that can revert sDie's handsOff. eastDoor:open and
+			; eastDoor:close cue eastDoor, so the eastDoor:open call in sDie's
+			; state 1 is problematic for that reason. Sierra worked around it by
+			; calling a second handsOff + setting the hand cursor. Even if it does
+			; not really fix the cursor, keeps the player without control. However,
+			; if the player starts to close eastDoor at a precise moment before
+			; sDie starts, both handsOff will be reverted, one by eastDoor:close
+			; and the other by eastDoor:open, returning control to the player.
+			;
+			; b) The murderer goes after Laura while she's moving. Considering that
+			; ego's speed can be changed and that the murderer's speed is fixed,
+			; making both actors not move simultaneously is a better approach, and
+			; it's what's actually done in many other "death scripts".
+			;
+			; Our previous bugfix in state 0 makes sDie unable to move to state 1
+			; while the door is opening/closing, already preventing handsOff issues
+			; in that case. We now work around the problematic eastDoor:open giving
+			; eastDoor's exitType property a value of 3, which is invalid but will
+			; make eastDoor:cue skip handsOn(1) when the door opens (and won't make
+			; Laura exit). We deal with b) by using register, cues and a new state
+			; to let the door and Laura finish before the murderer enters.
 			(1
-				(gGame handsOff:)
-				(gGame setCursor: global21)
-				(gEgo setMotion: PolyPath 160 160)
+;;;				(gGame handsOff:) ; no longer needed
+;;;				(gGame setCursor: global21) ; no longer needed
+;;;				(gEgo setMotion: PolyPath 160 160)
+				(gEgo setMotion: PolyPath 160 160 self) ; we want ego to cue sDie
+				(eastDoor locked: 0) ; moved here from state 0, outside of state 0's loop
 				(if (== (eastDoor doorState?) 0)
 					(doorWire dispose:)
-					(eastDoor caller: self open:)
+;;;					(eastDoor caller: self open:)
+					(eastDoor caller: self open: exitType: 3) ; exitType: 3 makes eastDoor:cue skip handsOn(1)
 					(gGameMusic2 number: 444 flags: 1 loop: 1 play:)
 					(splinters init: setCycle: End)
 				else
-					(= cycles 1)
+;;;					(= cycles 1)
+					(= register 1) ; state 2 won't wait for a cue
 				)
 			)
-			(2
+			(2 ; new state
+				(= cycles register) ; will wait for a cue if register is unset (0)
+			)
+;;;			(2
+			(3 ; increase state # by 1
 				(if (== (eastDoor doorState?) 0) (splinters addToPic:))
 				(oriley
 					init:
@@ -224,26 +282,34 @@
 				)
 				(gWrapSound number: 3 flags: 1 loop: 1 play:)
 			)
-			(3
+;;;			(3
+			(4 ; increase state # by 1
 				(oriley setMotion: PChase gEgo 22 self)
 			)
-			(4
+;;;			(4
+			(5 ; increase state # by 1
 				(oriley view: 424)
 				(oriley cel: 0)
 				(proc0_5 gEgo oriley)
 				(proc0_5 oriley gEgo)
 				(= cycles 4)
 			)
-			(5 (oriley setCycle: End self))
-			(6
+;;;			(5
+			(6 ; increase state # by 1
+				(oriley setCycle: End self)
+			)
+;;;			(6
+			(7 ; increase state # by 1
 				(thudSound play:)
 				(gEgo view: 858 setCycle: End self)
 			)
-			(7
+;;;			(7
+			(8 ; increase state # by 1
 				(= global145 0)
 				(global2 newRoom: 99)
 				(self dispose:)
 			)
+			; END OF TWEAK+BUGFIX (see also state 0's bugfix)
 		)
 	)
 )
