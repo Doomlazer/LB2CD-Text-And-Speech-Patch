@@ -6,7 +6,11 @@ The BOTH text & speech option has been patched into LB2 under ScummVM for some t
 
 Move/copy all patch files from the PATCHES folder directly into your Laura Bow 2 CD (version 1.1) game folder. This method requires replacing the existing 100.scr and 100.hep files in your LB2 game directory. The new patches include all changes from the original patches, but be sure to backup your original files before installation!
 
-Alternatively, copy the PATCHES folder (folder included) into your game directory and change the `patchDir=.\;audiosfx\. ` line in your RESOURCES.CFG file to `patchDir=PATCHES\.;.\;audiosfx\. `. This method doesn't require overwriting any existing patch.
+Alternatively, copy the PATCHES folder (folder included) into your game directory and add the following line to RESOURCE.CFG:
+```
+patchDir=PATCHES\.;.\;audiosfx\. 
+```
+If a line starting with "patchDir=" already exists, replace it. This method doesn't require overwriting any existing patch.
 
 The game begins with both speech and text enabled. Click the MODE button in the control panel to switch between TEXT, SPEECH, and BOTH.
 
