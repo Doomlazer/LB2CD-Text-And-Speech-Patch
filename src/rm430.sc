@@ -167,23 +167,33 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				; BUGFIX: Prevent pursuitTimer from breaking if it expires during sExitWest.
+				; TWEAK+BUGFIX: Don't queue the sDie script if it's attached to rm430
+				; and prevent pursuitTimer from breaking if it expires during sExitWest.
 				;
-				; In act 5, if pursuitTimer expires when the player is using the west exit
-				; and sExitWest is ongoing, sDie will be queued next, but the queue will be
-				; gone when changing rooms. In this case sDie won't happen and the murderer
-				; will no longer appear.
+				; a) In our changes to sExitEast we forcefully call rm430:notify if the
+				; player attempts to use the east exit during act 5. We have to ensure
+				; that sDie isn't queued next if it's already attached to the current
+				; room. Not doing so would introduce issues.
 				;
-				; We fix this by testing in rm430:notify if sExitWest is attached to the
-				; current room when pursuitTimer expires, if it is we start pursuitTimer
-				; again, but with a couple of seconds so it expires in the next room.
+				; b) In act 5, if pursuitTimer expires when the player is using the west
+				; exit and sExitWest is ongoing, sDie will be queued next, but the queue
+				; will be gone when changing rooms. In that case sDie won't happen and
+				; the murderer will no longer appear.
+				;
+				; We approach a) by testing if the script attached to the current room
+				; isn't sDie, if it is we break the cond doing nothing. We fix b) by
+				; testing if sExitWest is attached to the current room when pursuitTimer
+				; expires, when it is we start pursuitTimer again, but with a couple of
+				; seconds so it expires in the next room.
 ;;;				((global2 script?) next: sDie)
-				(if (== (global2 script?) sExitWest) ; is sExitWest attached to the room?
-					((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
-				else
-					((global2 script?) next: sDie) ; otherwise queue sDie next
+				(cond
+					((== (global2 script?) sDie)) ; is sDie attached to the current room? break doing nothing
+					((== (global2 script?) sExitWest) ; is sExitWest attached to the current room?
+						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
+					)
+					(else ((global2 script?) next: sDie)) ; queue sDie so it's attached to the current room next
 				)
-				; END OF BUGFIX
+				; END OF TWEAK+BUGFIX (see also sExitEast:changeState)
 			else
 				(global2 setScript: sDie)
 			)
@@ -473,39 +483,34 @@
 			; happen. It's clear that the player isn't supposed to re-enter that
 			; room in the first place, but Sierra never put any countermeasure to
 			; prevent it from happening. Note that rm420 can only be re-entered from
-			; rm430's East door.
+			; rm430's east exit.
 			;
-			; We approach it by not letting ego pass through rm430's East door
-			; during act 5, moving ego back inside + expiring pursuitTimer whenever
-			; it is attempted. This calls rm430:notify, queueing sDie so it's
-			; attached to the current room next, making the murderer appear and kill
-			; Laura. This is similar to how the player is punished in other rooms.
+			; We approach it by not letting ego pass through rm430's east door
+			; during act 5, calling rm430:notify whenever it is attempted. This will
+			; queue sDie so it's attached to the current room next, making the
+			; murderer appear and kill Laura. This is similar to how the player is
+			; punished in other rooms. We also had to modify rm430:notify to not let
+			; sDie be queued next if it's already attached to the room, to avoid
+			; introducing issues.
 ;;;			(0
 ;;;				(gGame handsOff:)
 ;;;				(gEgo heading: 90 setMotion: MoveTo 320 (gEgo y?) self)
 ;;;			)
-;;;			(1
-;;;				(gEgo edgeHit: 2)
-;;;				(global2 newRoom: (global2 east?))
-;;;				(self dispose:)
-;;;			)
 			(0
 				(gGame handsOff:)
 				(if (== global123 5) ; is it act 5?
-					(gEgo heading: 90 setMotion: MoveTo 300 124 self) ; move ego to a safe position to prevent getting stuck
-					((ScriptID 94 1) seconds: 0) ; expire pursuitTimer (will make sDie be queued next)
+					(global2 notify:) ; call rm430:notify to make sDie be queued next
+					(self dispose:)
 				else
 					(gEgo heading: 90 setMotion: MoveTo 320 (gEgo y?) self)
 				)
 			)
+			; END OF IMPROVEMENT (see also rm430:notify)
 			(1
-				(if (!= global123 5) ; is not act 5?
-					(gEgo edgeHit: 2)
-					(global2 newRoom: (global2 east?))
-				)
+				(gEgo edgeHit: 2)
+				(global2 newRoom: (global2 east?))
 				(self dispose:)
 			)
-			; END OF IMPROVEMENT
 		)
 	)
 )
