@@ -234,7 +234,7 @@
 				(if (eastDoor cycler?) (-- state)) ; has eastDoor a cycler attached? repeat this state next
 				(= cycles 1)
 			)
-			; END OF BUGFIX (see also the bugfix below)
+			; END OF BUGFIX (see also the bugfix below and eastDoor:changeState)
 			;
 			; TWEAK+BUGFIX: Prevent handsOff issues in sDie and make the murderer
 			; enter only when Laura has finished moving.
@@ -758,6 +758,22 @@
 	)
 	
 	(method (doVerb theVerb)
+		; BUGFIX: Don't let eastDoor:doVerb do anything if sDie is ongoing.
+		;
+		; The player can close eastDoor when sDie (this room's "death script"
+		; for act 5) is ongoing. In theory that shouldn't be possible because
+		; the first thing sDie does is calling handsOff, but if the player uses
+		; the DO verb on eastDoor at a precise moment before sDie is started by
+		; rm430:notify, Laura will approach/head towards it, and by the time
+		; eastDoor:doVerb is called sDie will be already ongoing. Pulling this
+		; off will revert the latest handsOff set by sDie and make its doorState
+		; tests unreliable. To make things worse, our changes to sDie make this
+		; issue more problematic, since it now relies on only one handsOff.
+		;
+		; We fix it by testing if sDie is attached to the current room before
+		; doing anything and making doVerb return if that's the case.
+		(if (== (global2 script?) sDie) (return)) ; is sDie attached to the current room? return
+		; END OF BUGFIX (see also sDie:changeState)
 		(switch theVerb
 			; BUGFIX: Fix various issues with eastDoor when it's wired shut.
 			;
