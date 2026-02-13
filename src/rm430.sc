@@ -234,7 +234,7 @@
 				(if (eastDoor cycler?) (-- state)) ; has eastDoor a cycler attached? repeat this state next
 				(= cycles 1)
 			)
-			; END OF BUGFIX (see also the bugfix below and eastDoor:changeState)
+			; END OF BUGFIX (see also the bugfix below and eastDoor:doVerb)
 			;
 			; TWEAK+BUGFIX: Prevent handsOff issues in sDie and make the murderer
 			; enter only when Laura has finished moving.
