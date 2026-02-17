@@ -409,13 +409,43 @@
 				)
 				(gEgo setMotion: MoveTo 62 144 self)
 			)
+			; BUGFIX: Fix cursor issues if sDie starts right after sGetThatWire.
+			;
+			; During act 5, if pursuitTimer expires while Laura is getting the wire,
+			; sDie (the "death script" of this room) will be queued next. The moment
+			; sDie is attached to the room the player will be left with a wrong
+			; cursor instead of changing to the expected handsOff one.
+			;
+			; This seems to occur due to a bad interaction between gLb2Messager
+			; (called by gEgo:get), handsOn and sDie, which are executed after each
+			; other without any waits. Both gLb2Messager and handsOn manipulate the
+			; cursor. This issue is only visible after our changes to sDie, its 3
+			; seconds wait and double handsOff used to work around it.
+			;
+			; We fix it by adding a new state (5) and executing gEgo:get separately
+			; in state 4, along with SetFlag and addCluesCode, with a 2 cycles wait
+			; before changing to state 5. We move the handsOn call to state 5. This
+			; way gLb2Messager has time to finish manipulating the iconbar, cursor
+			; and disposing itself before handsOn is called, the script is disposed
+			; and sDie starts.
+;;;			(4
+;;;				(proc0_3 44) ; SetFlag 44 (Got wire)
+;;;				(gEgo get: 34) ; get wire
+;;;				((ScriptID 21 0) doit: 803) ; addCluesCode, Wire
+;;;				(gGame handsOn:)
+;;;				(self dispose:)
+;;;			)
 			(4
-				(proc0_3 44)
-				(gEgo get: 34)
-				((ScriptID 21 0) doit: 803)
+				(proc0_3 44) ; SetFlag 44 (Got wire)
+				(gEgo get: 34) ; get wire
+				((ScriptID 21 0) doit: 803) ; addCluesCode, Wire
+				(= cycles 2)
+			)
+			(5
 				(gGame handsOn:)
 				(self dispose:)
 			)
+			; END OF BUGFIX
 		)
 	)
 )
