@@ -70,6 +70,17 @@
 		(if (== global123 5)
 			(self setInset: 0)
 			((ScriptID 94 1) setReal: (ScriptID 94 1) 2)
+			; BUGFIX: Make #430 start in proper hands-off when entering from #435.
+			;
+			; Room 430 (Pterodactyl Room) is intended to start in hands-off
+			; when entering from room 435 (Ziggy's close-up), but the player has
+			; control while the hands-off cursor is shown. Room 435 should call
+			; handsOff before changing to room 430 for this to work correctly.
+			;
+			; We fix it by calling handsOff before changing room #430. We've had to
+			; do the same in sRunIt:changeState(5)
+			(gGame handsOff:)
+			; END OF BUGFIX (see also sRunIt:changeState(5))
 			(global2 newRoom: 430)
 		)
 	)
@@ -140,6 +151,17 @@
 			)
 			(5
 				(gIconBar enable: 7)
+				; BUGFIX: Make #430 start in proper hands-off when entering from #435.
+				;
+				; Room 430 (Pterodactyl Room) is intended to start in hands-off
+				; when entering from room 435 (Ziggy's close-up), but the player has
+				; control while the hands-off cursor is shown. Room 435 should call
+				; handsOff before changing to room 430 for this to work correctly.
+				;
+				; We fix it by calling handsOff before changing room #430. We've had to
+				; do the same in rm435:notify.
+				(gGame handsOff:)
+				; END OF BUGFIX (see also rm435:notify)
 				(global2 newRoom: 430)
 			)
 		)
