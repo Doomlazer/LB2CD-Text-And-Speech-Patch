@@ -129,7 +129,25 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				((global2 script?) next: sCaughtYou)
+				; BUGFIX: Prevent pursuitTimer from breaking if it expires during
+				; sExitNorth.
+				;
+				; During the chase in act 5, if pursuitTimer expires when the player is
+				; exiting this room and sExitNorth is ongoing, sCaughtYou (this room's
+				; "death script") will be queued next, but the queue will be gone after
+				; changing rooms. As a result the murderer won't appear anymore and
+				; pursuitTimer won't restart either.
+				;
+				; We fix it by testing if sExitNorth is ongoing, if it is we restart
+				; pursuitTimer with one second, so it expires in the next room ensuring
+				; Laura's death.
+;;;				((global2 script?) next: sCaughtYou)
+				(if (== (global2 script?) sExitNorth) ; is sExitNorth attached to the current room?
+						((ScriptID 94 1) setReal: (ScriptID 94 1) 1) ; start pursuitTimer again, 1 second
+				else
+					((global2 script?) next: sCaughtYou)
+				)
+				; END OF BUGFIX
 			else
 				(global2 setScript: sCaughtYou)
 			)
