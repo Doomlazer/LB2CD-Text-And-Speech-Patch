@@ -48,7 +48,33 @@
 		)
 		(switch gGNumber
 			(435
-				((Timer new:) setReal: self 3)
+				; TWEAK+BUGFIX: Use the 3 second timer in rm430:init more sparingly and
+				; prevent sDie from being interrupted by sGetThatWire.
+				;
+				; The 3 second timer present here is started every time the player
+				; enters this room from #435 (Ziggy's close-up), causing a blocking
+				; wait. However, its usage can be reduced because it's only necessary
+				; the first time the player sees Ziggy's close-up in #435 or when
+				; pursuitTimer expires in #435 during act 5 (see rm435:init and
+				; rm435:notify, in #430, for more details).
+				;
+				; This 3 second timer can also cause a bug: if the player uses the wire
+				; cutter in #435 to get the wire during act 5 and pursuitTimer happens
+				; to expire while the 3 second timer is ongoing, sGetThatWire will start
+				; and can interrupt sDie, making the murderer not appear anymore.
+				;
+				; We set the unused flag 93 in rm435:init (#435) and rm435:notify (#435)
+				; so we can test it here and start the 3 second timer only for the needed
+				; cases. If the flag isn't set we instead cue rm430. This removes unneeded
+				; waits and also makes the bug mentioned above impossible to reproduce.
+;;;				((Timer new:) setReal: self 3)
+				(if (proc0_2 93) ; IsFlag 93?
+					((Timer new:) setReal: self 3) ; new 3 seconds timer and cue rm430
+					(proc0_4 93) ; ClearFlag 93
+				else
+					(self cue:) ; directly cue rm430
+				)
+				; END OF TWEAK+BUGFIX (see also rm435:init and rm435:notify, in #435)
 			)
 			(north
 				(gEgo posn: 113 119 edgeHit: 0 setHeading: 180)
@@ -144,23 +170,8 @@
 			((ScriptID 22 0) doit: -20222)
 		)
 		(cond
-			; BUGFIX: Prevent sDie being interrupted by sGetThatWire
-			;
-			; If the player doesn't have the wire in act 5 and uses the pliers to get it
-			; in rm435, pursuitTimer can expire right when the game returns to rm430,
-			; depending on the timing. In that case sDie will be attached to the room as
-			; expected, but sGetThatWire will interrupt it immediately after. The
-			; murderer will not appear, Laura won't die and the timer won't restart.
-			;
-			; We fix it by checking in the cond before anything else if sDie is attached
-			; to the current room. If it is, we do nothing else, letting sDie continue
-			; so it properly kills Laura.
-;;;			((proc0_2 63) (global2 setScript: sGetThatWire) (proc0_4 63))
-;;;			((!= (global2 script?) sDie) (gGame handsOn:))
-			((== (global2 script?) sDie)) ; is sDie attached to the current room? Do nothing.
 			((proc0_2 63) (global2 setScript: sGetThatWire) (proc0_4 63))
-			(else (gGame handsOn:))
-			; END OF BUGFIX
+			((!= (global2 script?) sDie) (gGame handsOn:))
 		)
 	)
 	

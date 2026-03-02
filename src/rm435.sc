@@ -37,7 +37,25 @@
 		)
 		(gEgo heading: 180)
 		(super init:)
-		(if (not (proc0_2 72))
+		(if (not (proc0_2 72)) ; has the player never seen Ziggy's close-up?
+			; TWEAK: Set new flag to help limit the Pterodactyl Room's timer.
+			;
+			; We modified rm430:init (in #430) to disable the 3 second timer located
+			; there, that starts after changing from room 435 (Ziggy's close-up) to
+			; room 430 (Pterodactyl Room) and causes a blocking wait. That timer
+			; isn't needed most of the time, but it is if the player has just seen
+			; Ziggy's close-up for the first time:
+			;
+			; During act 3, when the player sees Ziggy's close-up in room 435 for
+			; the first time, the clock will be shown after returning to room 430.
+			; Waiting 3 seconds lets #430 fully initialize before the clock is shown
+			; Not doing so results in the body not being interactable in #430 until
+			; the player re-enters the room.
+			;
+			; We set the unused flag 93 here so we can test it in #430 to know that
+			; we need to start the timer.
+			(proc0_3 93) ; SetFlag 93 (#430 should wait 3 seconds)
+			; END OF TWEAK (see also rm435:notify, and #430:init in #430)
 			(gEgo
 				init:
 				normalize: (if (== global123 5) 426 else 831)
@@ -66,10 +84,28 @@
 		(super dispose:)
 	)
 	
-	(method (notify)
+	(method (notify) ; called when pursuitTimer expires in this room
 		(if (== global123 5)
 			(self setInset: 0)
-			((ScriptID 94 1) setReal: (ScriptID 94 1) 2)
+			; TWEAK: Set new flag to help limit the Pterodactyl Room's timer.
+			;
+			; We modified rm430:init (in #430) to disable the 3 second timer located
+			; there, that starts after changing from room 435 (Ziggy's close-up) to
+			; room 430 (Pterodactyl Room) and causes a blocking wait. That timer
+			; isn't needed most of the time, but it is if pursuitTimer expires in
+			; #435 during act 5:
+			;
+			; During act 5, if pursuitTimer expires in #435 it will be restarted
+			; with 2 seconds and the player will be sent to 430. sDie (430's "death
+			; script") will shortly be attached to rm430, ensuring Laura's death.
+			; The 3 seconds timer of room 430 prevents the player from acting before
+			; sDie starts.
+			;
+			; We set the unused flag 93 here so we can test it in #430 to know that
+			; we need to start the timer.
+			(proc0_3 93) ; SetFlag 93 (#430 should wait 3 seconds)
+			; END OF TWEAK (see also rm435:init, and rm430:init in #430)
+			((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; restart pursuitTimer with 2 seconds
 			; BUGFIX: Make #430 start in proper hands-off when entering from #435.
 			;
 			; Room 430 (Pterodactyl Room) is intended to start in hands-off
