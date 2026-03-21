@@ -159,14 +159,19 @@
 		(if (& global90 $0002)
 			(= temp201 (Memory memALLOC_CRIT 12))
 			(Message msgLAST_MESSAGE temp201)
-		; TEXT&SPEECH CHANGE: Prevent using an uninitialized temp201 in message mode 1.
+		; TEXT&SPEECH CHANGE: Prevent using an uninitialized temp201 in message
+		; mode 1.
 		;
-		; Now we use temp201 for all the messages, but the variable isn't initialized
-		; while using TEXT message mode (1). It works but ScummVM's debugger gives us
-		; warnings. We give temp201 the 0 value if TEXT message mode is enabled.
+		; Now that we pass temp201 to the talker without caring on the active
+		; message mode (see the change below), teno201 will also be passed if
+		; if the TEXT message mode (1) active. The problem here is that when
+		; the TEXT message mode is active temp201 isn't initialized. It works
+		; well but ScummVM's debugger gives warnings.
+		;
+		; We set temp201's value as 0 if TEXT message mode is enabled.
 		else
 			(= temp201 0)
-		; END OF TEXT&SPEECH CHANGE
+		; END OF TEXT&SPEECH CHANGE (see also the change below this one)
 		)
 		(if
 			(and
@@ -178,9 +183,27 @@
 			)
 			(if (!= (= temp0 (self findTalker: temp0)) -1)
 				(talkerSet add: temp0)
-				; TEXT&SPEECH CHANGE: Combine text + speech on messages.
-				; Thnx Kawa https://sciprogramming.com/community/index.php?topic=1577.msg8632#msg8632
-				(temp0 modNum: param1 say: @temp1 temp201 self param1 param2 param3 param4 param5)
+				; TEXT&SPEECH CHANGE: Pass text buffer and audio handle to the talker.
+				;
+				; @temp1 is a buffer used to store the text of the message that will be
+				; displayed by the talker. temp201 is used to store the tuple of the
+				; message, which has all that's needed for the talker to play the
+				; corresponding speech by using DoAudio. The game passes temp201 to the
+				; talker if message mode is SPEECH (2), OR passes @temp1 if message mode
+				; is TEXT (1).
+				;
+				; Since now we're using a value of 3 for global90 to enable a combined
+				; text+speech mode, it unintendedly passes the "(& global90 $0002)" test
+				; present here, originally meant to detect if the message mode is 2.
+				; This makes Messager:sayNext pass temp201 but NOT @temp1, so the talker
+				; will be able to play the speech but not to display the text. We want
+				; to pass both things, so the talker can display text AND play speech.
+				;
+				; We remove the tests and pass both @temp1 and temp201 to the talker,
+				; combining the two types of calls in one. Changes according to Kawa's
+				; post (thank you!) in:
+				; https://sciprogramming.com/community/index.php?topic=1577.msg8632#msg8632
+				; NOTE: Narrator:say, in #928, also requires changes for this to work.
 ;;;				(if (& global90 $0002)
 ;;;					(temp0 modNum: param1 say: temp201 self)
 ;;;				else
@@ -189,7 +212,8 @@
 ;;;						say: @temp1 self param1 param2 param3 param4 param5
 ;;;					)
 ;;;				)
-				; END OF TEXT&SPEECH CHANGE
+				(temp0 modNum: param1 say: @temp1 temp201 self param1 param2 param3 param4 param5) ; combined call passing both text buffer and audio handle
+				; END OF TEXT&SPEECH CHANGE (see also the change above, and Narrator:say in #928)
 				(++ curSequence)
 			else
 				(if gNewEventHandler

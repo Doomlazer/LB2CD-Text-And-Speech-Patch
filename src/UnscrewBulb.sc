@@ -61,11 +61,11 @@
 			)
 			(else 
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(gEgo posn: 60 180)
 			)
 		)
-		;(gIconBar disable: 7)
+;;;		(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 		(super init:)
 		(eastDoor init:)
 		(if (proc0_2 97) (eastDoor locked: 1 forceClose: 1))
@@ -167,25 +167,37 @@
 				)
 			)
 			(chair cel: 0 approachVerbs: 4 1 8 init: stopUpd:)
+			; BUGFIX: Fix disappearing objects during act 4's back rub scene.
+			;
+			; The typeWriter, deskLamp and wasteBasket Views are added to the room
+			; Pic by using addToPic to save memory. This deletes the Views
+			; themselves, so when the Pic is changed to Laura's close-up during the
+			; back rub scene, they are cleared out. When the Pic of Yvette's office
+			; is drawn again the objects are not visible anymore.
+			;
+			; We fix it by not calling the addToPic method of the affected views.
+			; Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11864
 			(typeWriter
 				cel: 0
 				init:
 				approachVerbs: 4 1 8
 				posn: 100 126
-				;addToPic:
+;;;				addToPic:
 			)
 			(if (proc0_2 40)
-				;(deskLamp setCel: 0 approachVerbs: 4 1 8 init: addToPic:)
+;;;				(deskLamp setCel: 0 approachVerbs: 4 1 8 init: addToPic:)
 				(deskLamp setCel: 0 approachVerbs: 4 1 8 init:)
 			else
 				(deskLamp approachVerbs: 4 1 8 init: addToPic:)
 			)
 			(wasteBasket
 				init:
-				;addToPic:
+;;;				addToPic:
 				approachVerbs: 4 1 8
 				stopUpd:
 			)
+			; END OF BUGFIX
 		)
 		(if (== global123 4)
 			(if (not (proc0_10 8961))
@@ -383,7 +395,35 @@
 	(method (doVerb theVerb)
 		(switch theVerb
 			(0
+				; BUGFIX: Prevent softlock in act 4 right after the back rub scene when
+				; entering Yvette's office (#550) from Carrington's office (#560).
+				;
+				; In act 4, entering Yvette's office after talking with Steve triggers
+				; the back rub scene. The player can enter from the hallway (#510), or
+				; from Carrington's office (#560) if the secret passage is used. When
+				; entering from Carrington's office the game will softlock after the
+				; player is sent to the hallway, retaining a disabled state.
+				;
+				; When entering Yvette's office from the hallway, LBRoom:init (in #17)
+				; attaches the eRS script (Enter Room Script, in #17) to the current
+				; room, but this doesn't happen when entering from Carrington's office.
+				; During the back rub scene and before the game changes back to the
+				; hallway, sBackRubInterrupted moves Laura offscreen, and lRS (Leave
+				; Room Script, #in 17) is attached to rm550 if no other script is
+				; attached to it, which is the case when entering from Carrington's
+				; office. In this last case, lRS:changeState(0) calls handsOff, the
+				; room changes, and lastly, eRS, that now gets attached to the hallway
+				; room, calls handsOn(1) in eRS:changeState(1), restoring a disabled
+				; state due to the unexpected handsOff, producing the softlock.
+				;
+				; We fix it by setting sBackRubInterrupted as the room's script, instead
+				; of as backRub's script. This makes LBRoom:init not attach lRS to the
+				; room when Laura is leaving, not calling the problematic handsOff and
+				; behaving as if we entered from the hallway. Fix ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11821
+;;;				(self setScript: sBackRubInterrupted)
 				(rm550 setScript: sBackRubInterrupted)
+				; END OF BUGFIX
 			)
 			(else  (super doVerb: theVerb))
 		)
@@ -1073,7 +1113,7 @@
 			(4
 				(lampCycle dispose: delete:)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1122,7 +1162,7 @@
 			)
 			(5
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(register dispose:)
 				(self dispose:)
 			)
@@ -1164,7 +1204,7 @@
 				(gEgo get: 29)
 				((ScriptID 21 0) doit: 798)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1215,7 +1255,7 @@
 			)
 			(7
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1437,7 +1477,7 @@
 					setScale: Scaler 110 0 190 0
 				)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1561,7 +1601,7 @@
 				(olympia dispose:)
 				(proc0_5 gEgo paperCutter)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)

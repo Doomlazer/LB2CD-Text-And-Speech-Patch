@@ -70,8 +70,25 @@
 		)
 		(super init:)
 		(if (== global123 5)
+			; BUGFIX: Fix incorrect transom re-initialization.
+			;
+			; Room 448 allows moving the chair and opening/closing the transom
+			; during act 5 chase. Flag 116 is set when the chair is moved and flag
+			; 39 is set when transom is opened, but on rm448:init, the cel of the
+			; transom is decided by checking if either flag is set. This makes it
+			; re-initialize opened when the player has only moved the chair.
+			;
+			; We fix it by splitting it in two separate tests, making rm448:init
+			; decide the transom's cel depending only on if flag 39 is set, and
+			; making the chair appear moved if flag 116 is set. Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12109
+;;;			(if (or (proc0_2 39) (proc0_2 116))
+;;;				(chair setPri: 7 posn: 104 123)
+;;;				(transomWin cel: 3)
+;;;			)
 			(if (proc0_2 39) (transomWin cel: 3))
 			(if (proc0_2 116) (chair setPri: 7 posn: 104 123))
+			; END OF BUGFIX
 			(chair init: stopUpd:)
 		)
 		(transomWin init: stopUpd:)
@@ -118,7 +135,23 @@
 				(pEvent claimed: 1)
 				(global2 setScript: sOffChair)
 			)
+			; BUGFIX: Fix rm448's event handler not passing VERB events.
+			;
+			; rm440 (in #440) and rm448 use their own handleEvent methods to handle
+			; joystick events, overriding their default event handlers, but they
+			; only pass MOVE events to super:handleEvent blocking the other event
+			; types. Clicking on the rooms themselves (ex: the floor) while using
+			; any verb does nothing.
+			;
+			; Here we fix it in rm448:handleEvent by letting it pass both MOVE and
+			; VERB events. evMOVEVERB is not a thing in SCI, so we directly use the
+			; $5000 value.
+			; (evMOVE = $1000, evVERB = $4000, $1000 | $4000 = $5000).
+			; Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12001
+;;;			((& (pEvent type?) evMOVE) (super handleEvent: pEvent))
 			((& (pEvent type?) $5000) (super handleEvent: pEvent))
+			; END OF BUGFIX (see also rm440:handleEvent, in #440)
 		)
 	)
 	
@@ -136,9 +169,32 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
+				; BUGFIX: Prevent crash/freeze due to stack overflow during act 5 chase.
+				;
+				; When pursuitTimer expires during act 5 chase rm448:notify is cued,
+				; which attaches sHeKills to this room, or queues it next if there's any
+				; script already attached to the room. This makes the murderer appear
+				; and kill Laura. rm448:notify doesn't test if sHeKills is already
+				; attached to the room, and that's problematic.
+				;
+				; If the player returns to rm448 through the north entrance without
+				; having opened the transom and without having hid in room 454's coffin,
+				; sEnterNorth will directly cue pursuitTimer so sHeKills is attached to
+				; the room, making the murderer immediately appear, but this doesn't
+				; stop pursuitTimer. If pursuitTimer now expires while sHeKills is
+				; ongoing, rm448:notify will queue sHeKills next, leaving it as both the
+				; current and the next script, causing infinite recursion when changing
+				; rooms. This will either crash or freeze the game.
+				;
+				; We fix it by testing if sHeKills is not attached to this room before
+				; queueing sHeKills next. Only if it isn't we queue it next. Fix ported
+				; from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12035
+;;;				((global2 script?) next: sHeKills)
 				(if (!= script sHeKills)
 					((global2 script?) next: sHeKills)
 				)
+				; END OF BUGFIX
 			else
 				(global2 setScript: sHeKills)
 			)
@@ -627,6 +683,25 @@
 	(method (doVerb theVerb)
 		(switch theVerb
 			(4
+				; BUGFIX: Fix transom animation speed.
+				;
+				; During act 5, the opening/closing animation of the transom in room 448
+				; and ego's animation can get out of sync, depending on the speed
+				; setting or the speed of the device. Ego's animation runs at game speed,
+				; while the transom's animation always runs at speed 6. When ego's
+				; animation completes the transom's animation is terminated, and being
+				; out of sync can cause premature interruption of the transom's
+				; animation, or its animation not starting at all.
+				;
+				; We fix it by setting ego's speed as the transom's cycleSpeed to sync
+				; them right before the transom is opened or closed. Fix ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12073
+				;
+;;;				(cond
+;;;					((not (>= (chair x?) 104)) (gLb2Messager say: 4 4 1))
+;;;					((== (transomWin cel?) 0) (global2 setScript: sOpenTransom))
+;;;					(else (global2 setScript: sCloseTransom))
+;;;				)
 				(if (not (>= (chair x?) 104))
 					(gLb2Messager say: 4 4 1)
 				else
@@ -637,6 +712,7 @@
 						(global2 setScript: sCloseTransom)
 					)
 				)
+				; END OF BUGFIX
 			)
 			(8
 				(if (= local0 0)

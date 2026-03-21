@@ -177,17 +177,19 @@
 					(global2 setScript: sOutTapestry)
 					; END OF BUGFIX (see also rm440:doVerb)
 				)
-				; BUGFIX: Fix rm440's event handler not passing evVERB events.
+				; BUGFIX: Fix rm448's event handler not passing evVERB events.
 				;
 				; rm440 and rm448 (in #448) use their own handleEvent methods to handle
-				; joystick events, overriding their default event handlers, but only pass
-				; evMOVE events to super:handleEvent blocking the other event types. Clicking
-				; on the rooms themselves (ex: the floor) while using any verb does nothing.
+				; joystick events, overriding their default event handlers, but they
+				; only pass MOVE events to super:handleEvent blocking the other event
+				; types. Clicking on the rooms themselves (ex: the floor) while using
+				; any verb does nothing.
 				;
-				; Here we fix it in rm440:handleEvent by letting it pass both evMOVE and evVERB
-				; events. SCICompanion's sci.sh doesn't define any evMOVEVERB, so we directly
-				; use the $5000 value (evMOVE is $1000 and evVERB $4000, both of them = $5000).
-				; Ported from:
+				; Here we fix it in rm440:handleEvent by letting it pass both MOVE and
+				; VERB events. evMOVEVERB is not a thing in SCI, so we directly use the
+				; $5000 value.
+				; (evMOVE = $1000, evVERB = $4000, $1000 | $4000 = $5000).
+				; Fix ported from:
 				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12001
 ;;;				((& (pEvent type?) evMOVE) (super handleEvent: pEvent))
 				((& (pEvent type?) $5000) (super handleEvent: pEvent))
@@ -204,7 +206,7 @@
 					; BUGFIX: Prevent soflock after unhiding from the tapestry during the chase
 					; in act 5 (continued).
 					;
-					; Continuation of the first bugfix described in rm440:handleEvenent.
+					; Continuation of the first bugfix described in rm440:handleEvent.
 					;
 					; We fix it by attaching sOutTapestry to the current room instead (global2).
 					;(gEgo setScript: sOutTapestry)
@@ -229,7 +231,7 @@
 						(not (== (global2 script?) (ScriptID 444 0)))
 					)
 					; BUGFIX: Prevent crash while exiting room 440 during the chase in act 5
-					; (East and South exits).
+					; (east and south exits).
 					;
 					; If pursuitTimer expires in this room during the chase in act 5,
 					; rm440:notify will be called, which in turn will attach sHeKills to the

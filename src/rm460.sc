@@ -356,6 +356,26 @@
 				(crane setCycle: End self)
 				(moverCrate setCycle: End self)
 			)
+			; BUGFIX: Prevent softlock in the crate room when using the east exit.
+			;
+			; If the player enters the crate room (460) from the elevator room
+			; (660) and then swings the hanging crate, trying to return by using
+			; the east exit will softlock the game.
+			;
+			; Moving the east crate that reveals the exit sets local0 to 1, and
+			; sSwingIt:changeState tests if local0 is set to decide which polygon
+			; should be used as the room's obstacle. But the local0 variable isn't
+			; re-initialized after re-entering the room, and that makes
+			; sSwingIt:changeState set the wrong polygon. Trying to use the east
+			; exit afterwards will result in a softlock.
+			;
+			; We fix it by making sSwingIt:changeState test if the previous room was
+			; 660 and set local0 to 1 if that's the case, before it decides which
+			; polygon to use. Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11747
+;;;			(3 0)
+;;;			(4 0)
+;;;			(5
 			(3
 				(if (== gGNumber 660)
 					(= local0 1)
@@ -366,6 +386,7 @@
 				((global2 obstacles?) release:)
 				(= cycles 1)
 			)
+;;;			(6
 			(5
 				(global2
 					addObstacle:
@@ -378,7 +399,9 @@
 				(gEgo normalize: 426 setScale: 165)
 				(gEgo setMotion: MoveTo 184 159 self)
 			)
+;;;			(7
 			(6
+			; END OF BUGFIX
 				(gGame handsOn:)
 				(crane stopUpd:)
 				(moverCrate stopUpd:)

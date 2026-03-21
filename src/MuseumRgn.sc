@@ -1937,10 +1937,21 @@
 						)
 					)
 					(271
-						; Port bugfix from SVM:
+						; BUGFIX: Fix Yvette's messages when asking her about Tut in acts 3+.
+						;
+						; Flag 134 (Pippin is dead) is used to determine what message should be
+						; shown when Yvette is asked about Tut. The floppy version had an issue
+						; that made Yvette talk about Pippin's death in act 2 before it occurred.
+						; They fixed this for the CD version modifying Yvette:doVerb in #93, but
+						; they also modified aYvette:doVerb in this script file, which was
+						; unneeded and applies to acts 3+ instead, inverting the messages used
+						; and introducing a bug.
+						;
+						; We fix the message order reversing the flag test. Ported from:
 						; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11334
-						;(if (proc0_2 134) Message order is backwards. tested working in DOSBox and ScummVM
+;;;						(if (proc0_2 134)
 						(if (not (proc0_2 134))
+						; END OF BUGFIX
 							(gLb2Messager say: noun 6 30 0 0 modNum)
 						else
 							(gLb2Messager say: noun 6 16 0 0 modNum)

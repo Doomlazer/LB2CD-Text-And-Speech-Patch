@@ -66,10 +66,17 @@
 					)
 				)
 			)
-			; BUGFIX: Fix picture and safe closing by themselves (continued).
+			; TWEAK: Make safePicture display the closed messages while closed.
 			;
-			; We make safePicture impersonate safePic while the picture is closed, to handle
-			; any verb that isn't "DO" just like safePic would.
+			; We disabled in rm560:doit (in #560) the code that calls sDumpSafe to
+			; close the safe and the picture. Now the picture will be handled by
+			; safePicture if the player opens it, and will keep handling it until
+			; re-entering room 560. safePicture correctly opens and closes the
+			; painting, but using the LOOK verb on it while it's closed will
+			; trigger the wrong message (opened message).
+			;
+			; We make safePicture impersonate safePic while the picture is closed,
+			; to handle any verb that isn't DO just like safePic would.
 ;;;			(else (super doVerb: theVerb))
 			(else
 				(if (== (self cel?) 0)
@@ -78,7 +85,7 @@
 				(super doVerb: theVerb)
 				(self noun: 38 modNum: 561) ; restore safePicture's noun and modNum
 			)
-			; END OF BUGFIX (see also rm560:doit in rm560.sc, script #560).
+			; END OF TWEAK (see also rm560:doit in rm560.sc, in #560).
 		)
 	)
 )

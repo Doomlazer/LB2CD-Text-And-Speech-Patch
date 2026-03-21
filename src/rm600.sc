@@ -636,7 +636,34 @@
 	)
 	
 	(method (cue)
+		; BUGFIX: Fix softlock in Wolfe's office caused by the 'bugs with meat'.
+		;
+		; After having put the meat in the trunk of the Mammology Lab (#630),
+		; every time the player enters the Museum Basement (#600), meatTimer
+		; (in rm600:init) will cue bugsWithMeat 5 seconds later. This attaches
+		; the sDoMeat script to bugsWithMeat, showing the bugs' animation and
+		; calling handsOff to disable the player's control for a while.
+		;
+		; On the other hand, leaving the room by using the north or east doors
+		; also calls handsOff when the doors open, their 'open' method
+		; (inherited from the LbDoor class (#16)) is responsible of this. This
+		; handsOff isn't reverted until Laura enters the next room.
+		;
+		; If meatTimer expires when the north door is being opened, sDoMeat's
+		; handsOff will be called on top of the door's handsOff. The player will
+		; end up in Wolfe's Office (#650) in double handsOff and the room won't
+		; be able to revert this, resulting in a softlock. If sDoMeat instead
+		; starts when the door is already open and Laura is moving towards the
+		; exit, it won't result in a softlock but sDoMeat's handsOff will stop
+		; Laura's movement, interrupting the door's cue method, leaving the door
+		; open and a non-functional north exit. The east door has similar issues.
+		;
+		; We fix it by testing in bugsWithMeat:cue if the player has control,
+		; and only attaching sDoMeat when that's the case. Fix ported from:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12145
+;;;		(if (global2 script?)
 		(if (not (gUser canControl:))
+		; END OF BUGFIX
 			(meatTimer setReal: self 5)
 		else
 			(self setScript: sDoMeat)

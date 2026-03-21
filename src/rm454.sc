@@ -72,7 +72,7 @@
 			(456
 				(= style 100)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(gEgo
 					init:
 					posn: 96 135
@@ -90,7 +90,7 @@
 				)
 				(lid1 init: stopUpd: approachVerbs: 1 4 2 6 setPri: 7)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 			)
 		)
 		(if (== global123 5)
@@ -196,7 +196,7 @@
 			)
 			(4
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -273,9 +273,10 @@
 			(3
 				(nCreak number: 455 play:)
 				(lid1 show:)
-				(gEgo normalize: 831 setScale: Scaler 131 30 190 21)
+				(gEgo
+					normalize: 831 setScale: Scaler 131 30 190 21)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -294,7 +295,20 @@
 				(gEgo
 					view: 454
 					loop: 3
+					; BUGFIX: Fix glitchy animation when closing the left coffin.
+					;
+					; The animation that occurs in the Egyptian Exhibit when closing the
+					; left coffin starts at the wrong cel, resulting in a glitchy animation,
+					; showing the coffin fully closed for a brief moment before Laura starts
+					; to actually close it. This happens because the number of cels for the
+					; coffin in the CD version differs from the floppy version and the code
+					; of the CD version was never updated to reflect it.
+					;
+					; We fix it by setting the correct last cel (2). As described in:
+					; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11711
+;;;					cel: (if register 0 else (gEgo lastCel?))
 					cel: (if register 0 else 2)
+					; END OF BUGFIX
 					posn: 184 122
 					cycleSpeed: 16
 					setScale: Scaler 100 100 190 21
@@ -312,7 +326,7 @@
 			(2
 				(if (!= global123 5)
 					(gGame handsOn:)
-					;(gIconBar disable: 7)
+;;;					(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				)
 				(self dispose:)
 			)
@@ -414,7 +428,7 @@
 			(8
 				(= global115 0)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -445,7 +459,7 @@
 				(gEgo normalize: 831 setScale: Scaler 131 30 190 21)
 				((ScriptID 21 0) doit: 789)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -500,11 +514,17 @@
 			)
 			(7
 				(= local1 1)
-				; COMPAT: The next control panel restriction was present in the floppy version, we want to keep it.
-				; ScummVM patches the first seven "(gIconBar disable: 7)" it finds to skip them, but we've already
-				; disabled those. Using "(+ local1 6)" will always evaluate to 7, and alters the bytecode to not
-				; let ScummVM detect this one.
+				; SCUMMVM COMPAT TWEAK: The next control panel restriction was present
+				; in the floppy version, we want to keep it. ScummVM patches the first
+				; seven "(gIconBar disable: 7)" to skip them and disable control panel
+				; restrictions, but we've already disabled those so it would skip this
+				; remaining one instead.
+				;
+				; We work around this by using "(+ local1 6)" instead of 7, as it will
+				; always evaluate to 7, and alters the bytecode just enough to make it
+				; not match ScummVM's detection signature.
 				(gIconBar disable: (+ local1 6))
+				; END OF SCUMMVM COMPAT TWEAK
 				(gWrapSound number: 454 flags: 1 loop: 1 play: self)
 			)
 			(8 0)
@@ -623,11 +643,45 @@
 	(method (doVerb theVerb)
 		(switch theVerb
 			(4
-				(cond 
-					((and (== global123 5) (not (proc0_2 90))) (global2 setScript: sHide))
-					((== global123 5) (gLb2Messager say: 15 4 1))
-					(global115 (global2 setScript: sHandleTheCase 0 0))
-					(else (global2 setScript: sHandleTheCase 0 1))
+				(cond
+					; BUGFIX: Fix softlock when using the left coffin's lid during act 5.
+					;
+					; The lid of the left coffin at the Egyptian Exhibit will be found open
+					; during act 5 chase if the player left it open in a previous act.
+					; Trying to close it by using the DO verb on the lid will leave the game
+					; in hands-off, producing a softlock. The tests in lid:doVerb are
+					; evaluated in the wrong order, making it attach sHandleTheCase to the
+					; room during act 5, instead of sHide. Note that sHandleTheCase doesn't
+					; set handsOn if it runs during act 5, never returning control to the
+					; player.
+					;
+					; We fix it by putting the conditions in the right order. According to:
+					; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11663
+;;;					(global115
+;;;						(global2 setScript: sHandleTheCase 0 0)
+;;;					)
+;;;					((and (== global123 5) (not (proc0_2 90)))
+;;;						(global2 setScript: sHide)
+;;;					)
+;;;					((== global123 5) ; is it act 5?
+;;;						(gLb2Messager say: 15 4 1)
+;;;					)
+;;;					(else
+;;;						(global2 setScript: sHandleTheCase 0 1)
+;;;					)
+					((and (== global123 5) (not (proc0_2 90))) ; is it act 5 and IsFlag 90 (never hid in the coffin before)?
+						(global2 setScript: sHide) ; attach sHide to current room
+					)
+					((== global123 5) ; is it act 5?
+						(gLb2Messager say: 15 4 1) ; "You're in too much of a hurry to do that again."
+					)
+					(global115 ; is the left coffin's lid open? (global115 is used as a flag)
+						(global2 setScript: sHandleTheCase 0 0) ; attach sHandleTheCase to current room (register=0)
+					)
+					(else
+						(global2 setScript: sHandleTheCase 0 1) ; attach sHandleTheCase to current room (register=1)
+					)
+					; END OF BUGFIX
 				)
 			)
 			(else 

@@ -134,12 +134,20 @@
 	)
 	
 	(method (init)
-		; TEXT&SPEECH CHANGES: Don't let rm100:init change global90's value.
+		; TEXT&SPEECH CHANGE: Don't let rm100:init set SPEECH message mode.
 		;
-		; We want to keep global90's value set by lb2Initcode:init (#14). Setting a new
-		; value here is unnecessary and conflicts with ScummVM's audio/subtitles
-		; settings, though we'll still retain the test to enforce TEXT message mode (1)
-		; when there isn't digital audio support. Reference:
+		; The game uses global90 to set the active message mode. rm100:init
+		; changes the message mode when the title screen is shown, it sets it
+		; to SPEECH (2) if digital audio support is detected, or to TEXT (1)
+		; otherwise. We've set our new default message mode as BOTH (3) in
+		; lb2InitCode:init (#14), which is run when the game starts and before
+		; this script file is run, so we don't want it to be overriden. Setting
+		; our new default mode here changing 2 to 3 wouldn't be a good idea
+		; either, as it would override ScummVM's audio/subtitles settings.
+		;
+		; We disable the code that sets the message mode as SPEECH (2) but
+		; retain a test that enforces TEXT message mode (1) when there isn't
+		; digital audio support. Reference:
 		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
 ;;;		(if (DoSound sndGET_AUDIO_CAPABILITY)
 ;;;			(= global90 2)
@@ -149,7 +157,8 @@
 		(if (not (DoSound sndGET_AUDIO_CAPABILITY))
 			(= global90 1)
 		)
-		; END OF TEXT&SPEECH CHANGE
+		; END OF TEXT&SPEECH CHANGE (see also lb2InitCode:init, in #14, and
+		; LB2:init, in #0)
 		(proc958_0 128 108 151 101)
 		(proc958_0 132 100 20 23)
 		(proc958_0 130 964)

@@ -108,7 +108,20 @@
 		)
 		(DrawCel 995 1 1 56 39 temp5)
 		(DrawCel 995 14 0 138 139 temp5)
+		; TEXT&SPEECH CHANGE: Make the message mode button display the correct
+		; mode.
+		;
+		; When the settings window opens, the cel drawn to display the current
+		; message mode is chosen in a binary way. We have to change this since
+		; we need to use a new mode for text + speech outside of that range.
+		; We currently have cels 0, 1 and 2 in loop 13 of view 995 (we added
+		; cel 2), and those correspond with message modes 1 (text), 2 (speech)
+		; and 3 (both). We'll now use "messagemode - 1" instead to display the
+		; current mode. We've also needed to modify iconMode:doit to let the
+		; player switch between them.
+;;;		(DrawCel 995 13 (== global90 2) 208 145 temp5)
 		(DrawCel 995 13 (- global90 1) 208 145 temp5)
+		; END OF TEXT&SPEECH CHANGE (see also iconMode:doit)
 		(DrawCel 995 1 0 146 73 temp5)
 		(DrawCel 995 1 0 186 73 temp5)
 		(DrawCel 995 1 0 226 73 temp5)
@@ -356,6 +369,29 @@
 	)
 	
 	(method (doit &tmp temp0)
+		; TEXT&SPEECH CHANGE: Allow changing to TEXT/SPEECH/BOTH in the settings.
+		;
+		; We modified view 995 adding an image for the new BOTH message mode in
+		; a new cel (2) of loop 13. We adjust iconMode:doit to make use of it
+		; and be able to switch to any of the 3 message modes. We also needed to
+		; change the cel that is shown when the settings window appears, in
+		; gcWin:open.
+;;;		(if 1
+;;;			(switch global90
+;;;				(1
+;;;					(= global90)
+;;;					(= temp0 1)
+;;;				)
+;;;				(2
+;;;					(= global90)
+;;;					(= temp0 0)
+;;;				)
+;;;			)
+;;;			(DrawCel 995 13 temp0 154 110 15)
+;;;		else
+;;;			(Print font: gFont addText: {*** You're not playing a cd!} init:)
+;;;		)
+;;;		(self show:)
 		(switch global90
 			(1 
 				(if (DoSound sndGET_AUDIO_CAPABILITY)
@@ -371,5 +407,6 @@
 		(SetPort 0)
 		(DrawCel 995 13 (- global90 1) 208 145 15)
 		(SetPort temp0)
+		; END OF TEXT&SPEECH CHANGE (see also gcWin:open)
 	)
 )

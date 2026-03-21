@@ -99,7 +99,7 @@
 			(south
 				(gEgo x: 160)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 			)
 			(456 (gEgo x: 209 y: 127))
 			(else 
@@ -107,7 +107,7 @@
 			)
 		)
 		(gGame handsOn:)
-		;(gIconBar disable: 7)
+;;;		(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 		(super init:)
 		(cond 
 			(
@@ -119,7 +119,23 @@
 					(!= gGNumber 525)
 					(!= gGNumber 456)
 					(not (proc0_10 16648))
-					(not (proc0_2 80))
+					; BUGFIX: Fix 'loose cobra music' wrongly triggering.
+					;
+					; After act 4's 'loose cobra' scene finishes, the player can exit the
+					; room without examining the countess and re-enter. If this is done
+					; the 'loose cobra music' will wrongly play again. rm520:init tests,
+					; among other things, if the cobra event can occur and if it hasn't
+					; occurred to decide what music to play. The game mistakenly
+					; detects that the event still has not occurred, because it only sets
+					; it as 'occurred' after returning from the countess' close-up, by 
+					; cueing rm520, which calls triggerAndClock (#22) to update global124
+					; (global that stores what events have occurred).
+					;
+					; We fix it by adding to the tests if flag 80 isn't set. Flag 80 is set
+					; right after the player puts the cobra in the cage, so it's immediately
+					; updated unlike global124.
+					(not (proc0_2 80)) ; IsFlag 80 (cobra has been put back in the cage)
+					; END OF BUGFIX
 				)
 				(gGameMusic2 number: 521 loop: -1 flags: 1 play:)
 			)
@@ -230,7 +246,23 @@
 	(method (newRoom newRoomNumber)
 		(cond 
 			((== newRoomNumber 456) (super newRoom: newRoomNumber))
+			; BUGFIX: Fix premature startup of act 5 when examining the countess.
+			;
+			; During act 4 after the cobra scene, the player is able to interact
+			; with the countess' body to examine it. If the player gets the grapes,
+			; returns to Olympia's office and examines the body again, the game
+			; will prematurely start act 5. This occurs because rm520:newRoom tests
+			; if the grapes are in the inventory whenever the room changes, letting
+			; rm520:cue start act 5 when the test succeeds. This was expected to
+			; happen only when changing to room 510, but the countess' body is in
+			; its own room (#525), so it counts as a room change.
+			;
+			; We fix it by testing if the new room is 510 and only let it change
+			; act when the test passes. Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11962
+;;;			((and (== global123 4) (gEgo has: 31))
 			((and (== global123 4) (gEgo has: 31) (== newRoomNumber 510))
+			; END OF BUGFIX
 				(= newRoomNumber 26)
 				(WrapMusic dispose:)
 				((ScriptID 22 0) doit: 31)
@@ -1044,7 +1076,7 @@
 			(2
 				(if (not (gEgo has: 14)) (snakeOil show:))
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(gOldCast eachElementDo: #show)
 				(= cycles 1)
 			)
@@ -1083,7 +1115,7 @@
 					setHeading: 90
 				)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1165,7 +1197,7 @@
 				(gEgo startUpd:)
 				((Inv at: 14) owner: 0)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1226,7 +1258,7 @@
 				(= local11 1)
 				(gEgo setScript: sCobraTimer)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1254,7 +1286,7 @@
 			)
 			(2
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1346,7 +1378,7 @@
 				)
 				(gEgo setScript: sCobraTimer)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1389,7 +1421,7 @@
 			)
 			(7
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1438,7 +1470,7 @@
 			)
 			(5
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1559,13 +1591,13 @@
 				(UnLoad 128 528)
 				(UnLoad 128 529)
 				(gGameMusic2 number: 520 loop: -1 flags: 1 play:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(= cycles 1)
 			)
 			(7
 				(cobraDoor stopUpd:)
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)
@@ -1715,7 +1747,7 @@
 				(secretDoor stopUpd:)
 				(global2 newRoom: (global2 north?))
 				(gGame handsOn:)
-				;(gIconBar disable: 7)
+;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
 			)
 		)

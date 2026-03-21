@@ -127,30 +127,32 @@
 	
 	(method (doit)
 		(super doit:)
-		; BUGFIX: Fix picture and safe closing by themselves.
+		; BUGFIX: Fix picture and safe that close by themselves.
 		;
-		; The floppy version checks ego's coordinates and auto-closes both painting and
-		; safe when it moves, by calling sDumpSafe. This was ditched from the CD version,
-		; they set everything up so when sDumpSafe is called, it won't close the painting
-		; and safe while they're open or opening. The new code relies on tight timings
-		; and doesn't account for fast machines, those run rm560:doit too fast, passing
-		; the tests multiple times when the painting is still opening, ending up calling
-		; sDumpSafe in a non-controlled manner, which in turn closes it.
+		; The floppy version checks ego's coordinates and auto-closes both
+		; painting and safe when they change, by calling sDumpSafe. This was
+		; ditched from the CD version, they set things up so when sDumpSafe is
+		; called, it won't close the painting and safe if the painting is open
+		; or opening. The new code relies on tight timings and doesn't account
+		; for fast machines, those run rm560:doit too fast, passing the tests
+		; multiple times when the painting is still opening, calling sDumpSafe
+		; in a non-controlled manner, which in turn closes it.
 		;
-		; Disabling the code fixes opening the picture/safe by not using sDumpSafe anymore,
-		; with a side effect: safePic handles the painting when the player enters the room
-		; the "DO" verb makes safePic call safePicture (from script #561) to open it and
-		; then hides itself. From then on, safePicture handles the painting until it's
-		; closed again. Normally, sDumpSafe would call safePic:show after closing the
-		; painting to make safePic handle it back, but we don't use it now. All works, as
-		; safePicture can open and close the picture by itself, but if the player for
-		; example uses the "LOOK" verb on the closed picture, safePicture will trigger the
-		; "opened message" instead, as it isn't meant to handle the picture while closed.
+		; Disabling the code fixes this by not using sDumpSafe anymore, with a
+		; side effect: safePic handles the painting when the player enters the
+		; room, the DO verb makes safePic call safePicture:open (from script
+		; #561) to open it and then hides itself. From then on, safePicture
+		; handles the painting. Normally, sDumpSafe would call safePic:show
+		; after closing the painting to make safePic handle it back, but we
+		; don't use it now. All works, as safePicture can open and close the
+		; picture by itself, but if the player for example uses the LOOK verb
+		; on the closed picture, safePicture will trigger the "opened message"
+		; instead, as it isn't meant to handle the picture while closed.
 		;
-		; We fix it by disabling the offending code, we also modify safePicture:doVerb in
-		; script #561 to make it impersonate safePic whenever the picture is closed and the
-		; player uses any verb on it except "DO".
-		;
+		; We fix it by disabling the offending code, we also modify
+		; safePicture:doVerb in script #561 to make it impersonate safePic
+		; whenever the picture is closed and the player uses any verb that is
+		; not DO on it.
 ;;;		(if
 ;;;			(and
 ;;;				local0
@@ -160,7 +162,7 @@
 ;;;			(= local0 0)
 ;;;			(self setScript: sDumpSafe)
 ;;;		)
-		; END OF BUGFIX (continued in safePicture:doVerb, DialFeature.sc (script #561)).
+		; END OF BUGFIX (see also safePicture:doVerb, in #561)
 	)
 	
 	(method (dispose)

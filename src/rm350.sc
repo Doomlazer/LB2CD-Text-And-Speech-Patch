@@ -421,7 +421,24 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
+				; BUGFIX: Fix the lack of handsOff when entering the museum, which can
+				; lead to a softlock.
+				;
+				; Entering the Rotunda (#350) from the outdoors entrance (#335) will set
+				; sEnterSouth as the room script, which never calls handsOff, giving the
+				; player control while ego is still on the walking animation. Clicking
+				; to move ego or interacting with any object when the animation has
+				; still not finished will interrupt its movement and PolyPath will be
+				; unable to cue. As a result sEnterSouth won't conclude or be disposed,
+				; the room will retain sEnterSouth as the room script and the player
+				; won't be able to enter any other room, causing a softlock.
+				;
+				; We fix it by calling handsOff in sEnterSouth:changeState(0). We don't
+				; need to add a handsOn, as there's one already present in state 3. This
+				; fix is a port of:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11414
 				(gGame handsOff:)
+				; END OF BUGFIX
 				(proc0_3 25)
 				(if (== (gWrapSound number?) 335)
 					(gWrapSound fade: 127 5 5 0)

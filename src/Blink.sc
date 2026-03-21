@@ -228,12 +228,31 @@
 		)
 	)
 	
-	(method (say param1 param2 param3)
+	; TEXT&SPEECH CHANGE: Make Narrator:say able to process text and speech
+	; at the same time.
+	;
+	; After our changes to Messager:sayNext (in #924), it will pass
+	; Narrator:say a buffer with the text message as param1, a tuple of the
+	; message for playing the audio as param 2 and the caller as param 3.
+	; Narrator:say can't process that because it was coded to accept 2
+	; arguments and it expects param2 to be the caller and param1 to be
+	; either the text buffer or the tuple for the speech.
+	;
+	; We alter Narrator:say to accept a third argument, make it expect the
+	; caller to be param3 instead, and make it use param2 for the speech.
+	; Changes according to Kawa's post (thank you!) in:
+	; https://sciprogramming.com/community/index.php?topic=1577.msg8632#msg8632
+;;;	(method (say param1 param2)
+	(method (say param1 param2 param3) ; accept 3 arguments
 		(if gIconBar (gIconBar disable:))
 		(if (not initialized) (self init:))
-		(= caller (if (and (> argc 2) param3) param3 else 0))
+;;;		(= caller (if (and (> argc 1) param2) param2 else 0))
+		(= caller (if (and (> argc 2) param3) param3 else 0)) ; use the third argument for the caller
 		(if (& global90 $0001) (self startText: param1))
-		(if (& global90 $0002) (self startAudio: param2))
+;;;		(if (& global90 $0002) (self startAudio: param1))
+		(if (& global90 $0002) (self startAudio: param2)) ; use the second argument for the speech
+	; END OF TEXT&SPEECH CHANGE (see also Messager:sayNext in #924,
+	; Narrator:display and Talker:display)
 		(cond 
 			(modeless
 				(gLb2MDH addToFront: self)
@@ -278,7 +297,32 @@
 			(= saveCursor gCursorNumber)
 			(gGame setCursor: 996)
 		else
-			;(= saveCursor 0)
+			; TEXT&SPEECH CHANGE: Fix cursor being incorrectly restored after
+			; messages are disposed in BOTH message mode.
+			;
+			; The code in this else clause is a mouse cursor fallback, meant to be
+			; executed if a text message has to be displayed when the mouse isn't
+			; present and the mouse cursor is invisible (996). The walking cursor
+			; (0) is saved so it can be restored once the message is disposed, to
+			; not leave the player with an invisible cursor. However, this never
+			; worked as intended because Narrator:init always sets the cursor as
+			; the hand one (997) when no mouse is present, making impossible for
+			; the invisible cursor to be active when Narrator:display is called,
+			; always passing the "if" tests above. Additionally, since the tests
+			; are not specific enough this is also run when the mouse is present
+			; and a text message has to be displayed.
+			;
+			; It causes issues with our new BOTH message mode because the code in
+			; this else clause will always be run, saving the walking cursor which
+			; will later be restored by Narrator:dispose. This isn't problematic in
+			; the TEXT message mode, as Narrator:dispose never restores the cursor
+			; in that mode. SPEECH message mode isn't affected either, since
+			; Narrator:display isn't even called.
+			;
+			; We fix it by not saving the walking cursor at all, this has no side
+			; effects and prevents it from being restored in BOTH mode.
+;;;			(= saveCursor 0)
+			; END OF TEXT&SPEECH CHANGE (see also Talker:display)
 		)
 		(if showTitle (Print addTitle: name))
 		(Print
@@ -494,7 +538,17 @@
 			(= saveCursor gCursorNumber)
 			(gGame setCursor: 996)
 		else
-			;(= saveCursor 0)
+			; TEXT&SPEECH CHANGE: Fix cursor being incorrectly restored after
+			; messages are disposed in BOTH message mode.
+			;
+			; The walking cursor is restored every time a message is disposed
+			; while our new BOTH message mode is active. See Narrator:display for
+			; more details, the exact same applies here.
+			;
+			; We fix it by not saving the walking cursor at all, this has no side
+			; effects and prevents it from being restored in BOTH mode.
+;;;			(= saveCursor 0)
+			; END OF TEXT&SPEECH CHANGE (see also Narrator:display)
 		)
 		(if viewInPrint
 			(= temp0 (if useFrame loop else (bust loop?)))

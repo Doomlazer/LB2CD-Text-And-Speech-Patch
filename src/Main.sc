@@ -920,18 +920,23 @@
 		(= global112 {800-326-6654})
 		(= global113 {0734-303171})
 		(= global114 {900-370-5583})
-		((ScriptID 14 0) init:) ; lb2Initcode:init
+		((ScriptID 14 0) init:) ; lb2InitCode:init
 		(DisposeScript 14)
 		(DoAudio 7 22050)
 		; TEXT&SPEECH CHANGE: Don't let LB2:init change global90's value.
 		;
-		; We want to keep global90's value set by lb2Initcode:init (#14). Setting a new
-		; value here is unnecessary and conflicts with ScummVM's audio/subtitles settings.
+		; The game uses global90 to set the active message mode. The following
+		; line sets the message mode as SPEECH (2). We've set our new default
+		; message mode as BOTH (3) in lb2InitCode:init (in #14), which is run a
+		; bit earlier than this, so we don't want it to be overriden. Setting
+		; our new default mode here changing 2 to 3 wouldn't be a good idea
+		; either, as it would override ScummVM's audio/subtitles settings.
 		;
-		; We disable "(= global90 2)" hex editing 0.scr according to:
+		; We disable "(= global90 2)" by hex editing 0.scr according to:
 		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12472
 ;;;		(= global90 2)
-		; END OF TEXT&SPEECH CHANGE
+		; END OF TEXT&SPEECH CHANGE (see also lb2InitCode:init, in #14, and
+		; LB2:init, in #100)
 		((ScriptID 15 0) init:)
 		(= gWalkCursor walkCursor)
 		(= gLb2DoVerbCode lb2DoVerbCode)

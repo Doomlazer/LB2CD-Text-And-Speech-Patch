@@ -100,7 +100,24 @@
 		(gLb2WH dispose:)
 		((global2 obstacles?) dispose:)
 		(owner inset: 0)
-		(if (== owner global2) (gIconBar enable: 7)) ; control panel restore
+		; IMPROVEMENT: Enable control panel access when insets are disposed.
+		;
+		; The control panel is what lets the player adjust the settings and
+		; save/load the game. This CD version of the game restricts access to
+		; the control panel for unclear reasons and we've already reverted the
+		; base restrictions in LB2:handsOn.
+		;
+		; The floppy version of the game enables access to the control panel
+		; whenever an inset is disposed. This was removed for the CD version
+		; and has the side effect of leaving the control panel disabled after
+		; viewing an inset in any room.
+		;
+		; We enable access to the control panel when an inset is disposed and
+		; the owner is the current room. Fix ported from:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11175
+		(if (== owner global2) (gIconBar enable: 7))
+		; END OF IMPROVEMENT (see also LB2:handsOn in #0 and the script files of
+		; rooms 310, 441, 454, 520, 550, 610, 700, and 710))
 		(if (or (not argc) param1) (self refresh:))
 		(global2 obstacles: oldObstacles)
 		(= gOldCast oldCast)

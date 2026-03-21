@@ -144,7 +144,7 @@
 				; BUGFIX: Fix Laura being unable to hide in the tapestry after Olympia's
 				; meeting with Heimlich.
 				;
-				; When Olympia's meeting with Heimlich ends, both leave through the East door
+				; When Olympia's meeting with Heimlich ends, both leave through the east door
 				; but the room property of aHeimlich keeps being 440. In the case of aOlympia,
 				; when the meeting ends its room property is changed to 430 in sMeetingNo2's
 				; state 7 (in #440), and then the actor is put to wander. aHeimlich's room

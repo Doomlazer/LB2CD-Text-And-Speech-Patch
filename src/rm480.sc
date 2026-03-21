@@ -73,8 +73,21 @@
 		(dino init: setOnMeCheck: 1 8192)
 		(rexMouth approachVerbs: 4 1)
 		(rex approachVerbs: 4 1 setOnMeCheck: 1 16384 32 init:)
-		;(if (not (gEgo has: 18)) (bone init: stopUpd:))
-		(if (not (gEgo has: 18)) (bone approachVerbs: 4 1 approachX: 56 approachY: 152 init: stopUpd:)) ; add missing approach verbs
+		; BUGFIX: Fix laura not approaching the bone.
+		;
+		; The dinosaur bone is handled by using both an instance of View (bone)
+		; and an instance of Feature (dinoBones), presumably to give the player
+		; an easier time to click on it? The Feature works fine, but the View
+		; (used for the part of the bone outside of the desk) doesn't have
+		; approachVerbs, letting Laura interact with it from far away.
+		;
+		; We fix this by adding approachVerbs and the same approachX/Y values
+		; used by dinoBone, as bone doesn't have any and it would use its normal
+		; x and y values, which are different. The bone View also has a broken
+		; verb handler, that we fixed in another bugfix in the bone instance.
+;;;		(if (not (gEgo has: 18)) (bone init: stopUpd:))
+		(if (not (gEgo has: 18)) (bone approachVerbs: 4 1 approachX: 56 approachY: 152 init: stopUpd:)) ; add missing approachVerbs
+		; END OF BUGFIX (see also bone)
 		(dinoBones approachVerbs: 4 1 init:)
 		(gNarrator x: 10 y: 10)
 	)
@@ -133,10 +146,10 @@
 				; sExitNorth.
 				;
 				; During the chase in act 5, if pursuitTimer expires when the player is
-				; exiting this room and sExitNorth is ongoing, sCaughtYou (this room's
-				; "death script") will be queued next, but the queue will be gone after
-				; changing rooms. As a result the murderer won't appear anymore and
-				; pursuitTimer won't restart either.
+				; exiting the T.Rex room and sExitNorth is ongoing, sCaughtYou (this
+				; room's "death script") will be queued next, but the queue will be gone
+				; after changing rooms. As a result the murderer won't appear anymore
+				; and pursuitTimer won't restart either.
 				;
 				; We fix it by testing if sExitNorth is ongoing, if it is we restart
 				; pursuitTimer with one second, so it expires in the next room ensuring
@@ -318,9 +331,29 @@
 		(if
 			(and
 				(== (localSound number?) 483)
-				; scummvm bug fix port https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12242
+				; BUGFIX: Prevent premature startup of act 6.
+				;
+				; During act 5, when the player captures the murderer in the T.Rex room,
+				; sWrapMusic plays a chomp sound, and music right after.
+				; sOrileyCaught:changeState has an endless wait in state 15 which lets
+				; the music play while the animation is ongoing. sOrileyCaught:doit
+				; constantly tests if the music has finished playing, forcing the script
+				; to change to the next state by cueing it once the music ends, so it
+				; can continue and let act 6 start.
+				;
+				; The problem is that they tested localSound's prevSignal property to
+				; determine if the music ended, and while this worked correctly for the
+				; floppy version of the game, the CD version uses a different Sound
+				; class. prevSignal will immediately return -1 no matter if the music
+				; is playing, passing the test and abruptly changing to act 6.
+				;
+				; We fix it by testing localSound's handle property instead. Sound's
+				; handle property is always set when sounds are playing and cleared when
+				; stopped/disposed. Fix ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12242
 				;(== (localSound prevSignal?) -1)
 				(not (localSound handle?)) ; properly detect end of music
+				; END OF BUGFIX
 				(== (self state?) 15)
 			)
 			(self cue:)
@@ -783,9 +816,23 @@
 	)
 	
 	(method (doVerb theVerb)
-		; port SVM fix https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12220
-		;(dinoBones doVerb: &rest)
+		; BUGFIX: Fix bone's broken verb handler.
+		;
+		; The dinosaur bone is handled by using both an instance of View (bone)
+		; and an instance of Feature (dinoBones), presumably to give the player
+		; an easier time to click on it? The Feature works fine, but the View
+		; (used when the player clicks on the part of the bone outside of the
+		; desk) is unable to handle verbs. They wanted it to pass the verb to
+		; dinoBones so it could handle it in its place, but they forgot to pass
+		; the theVerb argument.
+		;
+		; We fix it by adding the theVerb argument. Fix ported from:
+		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12220
+		; The bone also has an issue with missing approachVerbs, that we've
+		; fixed in rm480:init, in bone's initialization.
+;;;		(dinoBones doVerb: &rest)
 		(dinoBones doVerb: theVerb &rest) ; pass theVerb to dinoBones
+		; END OF BUGFIX (see also rm480:init)
 	)
 )
 

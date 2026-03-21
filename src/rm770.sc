@@ -36,8 +36,16 @@
 		(gGame setCursor: 996)
 		(bird init: setScript: sFly)
 		(bird2 init: setScript: sLand 0 4)
+		; BUGFIX: Prevent the murderer's view partially disappearing when the
+		; first message is shown.
+		;
+		; We initialize the murderer's view in stopUpd. Not making the view
+		; update right when it initializes prevents part of the view from
+		; disappearing when his first message is shown on screen. See more info
+		; about this in sRunIt, a) section.
 ;;;		(murderer init:)
-		(murderer init: stopUpd:) ; BUGFIX: Start in stopUpd to prevent part of its view disappearing when the first message is shown (see also sRunIt)
+		(murderer init: stopUpd:)
+		; END OF BUGFIX (see also sRunIt)
 		(cop2 init: setScript: (sRandomScr new:))
 		(cop3 init:)
 		(cop5 init:)
@@ -249,13 +257,13 @@
 		(if
 			(and
 				(not local2)
-				; TEXT&SPEECH COMPAT FIX: The rock-breaking sounds of the prisoners can
+				; TEXT&SPEECH CHANGE: The rock-breaking sounds of the prisoners can
 				; interrupt the speech. They made those only play when the mode isn't
 				; SPEECH (2) testing it beforehand, we now have the BOTH mode (3) and
 				; also plays speech, so we need to tweak the test.
 ;;;				(!= global90 2) ; mode isn't SPEECH
 				(== global90 1) ; mode is TEXT
-				; END OF TEXT&SPEECH COMPAT FIX
+				; END OF TEXT&SPEECH CHANGE
 				(== (client cel?) 4)
 				(!= (client loop?) 5)
 			)
@@ -288,10 +296,10 @@
 		(if
 			(and
 				(not local3)
-				; TEXT&SPEECH COMPAT FIX, same change done in sRandomScr:doit.
+				; TEXT&SPEECH CHANGE: same change done in sRandomScr:doit.
 ;;;				(!= global90 2) ; mode isn't SPEECH
 				(== global90 1) ; mode is TEXT
-				; END OF TEXT&SPEECH COMPAT FIX
+				; END OF TEXT&SPEECH CHANGE
 				(== (client cel?) 4)
 			)
 ;;;			(gGameMusic2 number: 770 flags: 1 loop: 1 play: badguy2)

@@ -159,7 +159,7 @@
 				(gGameMusic2 fade:)
 				(WrapMusic pause: 0)
 				; BUGFIX: Fix cursor not changing to a down arrow when hovering over the
-				; South exit after the countess' meeting.
+				; south exit after the countess' meeting.
 				;
 				; In #440, southExitFeature makes the cursor change to a down arrow when
 				; hovering over the bottom part of the room. Hiding in the tapestry
@@ -171,7 +171,7 @@
 				; during the countess' meeting. In state 2 it attaches the sTalkWithCountess
 				; script to gEgo and disposes itself before having the chance to initialize
 				; southExitFeature in state 3. That's the expected behavior, but the issue
-				; is that southExitFeature isn't initialized when the meeting is over,
+				; is that southExitFeature isn't initialized when the meeting is over
 				; either, making the cursor no longer change to the down arrow one anymore.
 				; This problem only occurs when the player unhides before the countess
 				; leaves the room, and things return to normal after re-entering the room.
@@ -220,7 +220,7 @@
 		(switch theVerb
 			(6
 				(if (== (gEgo view?) 443)
-					(global2 setScript: (ScriptID 440 1))
+					(global2 setScript: (ScriptID 440 1)) ; sOutTapestry
 				else
 					(switch (global2 setInset: (ScriptID 20 0))
 						(1030

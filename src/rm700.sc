@@ -229,16 +229,17 @@
 				)
 				(gEgo normalize: 805 setScale: 125 loop: 1)
 				; BUGFIX: prevent visual artifacts after using the snake lasso to open the
-				; sarcophagus.
+				; coffin.
 				;
-				; When the snake lasso is used to open the sarcophagus ego is animated to show
+				; When the snake lasso is used to open the coffin, ego is animated to show
 				; the action. While this is going on a message is shown on screen on top of
 				; ego's view at the same time gEgo:normalize is called. The result is that
 				; right after the message disappears, ego's animation returns to normal, but
 				; glitchy remains of the last view used during the snake lasso animation stay
 				; there. This happens because when the message appears the underbits are
 				; stored, and they are restored when the message is disposed. The problem is
-				; that what's restored doesn't match with what's going on anymore.
+				; that what's restored doesn't match with what's going on anymore. This bug
+				; doesn't affect ScummVM.
 				;
 				; We fix it by using "(Animate 0)" to force a redraw of the picture, but only
 				; if one of the affected message modes (BOTH or TEXT) is being used.

@@ -205,9 +205,26 @@
 			)
 			(25 0)
 			(26
-				; SVM bug fix port https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12282
-				;(if (== (gWrapSound prevSignal?) -1) (= cycles 1))
+				; BUGFIX: Prevent abrupt room change during introduction.
+				;
+				; During the introduction, the game is supposed to wait in room 110
+				; until the music finishes before changing to room 120, but it
+				; abruptly changes while the music is still playing.
+				;
+				; This happens because gWrapSound:prevSignal is being used to test if
+				; the music has ended or not. This works on the floppy version of the
+				; game, but the CD version has a different Sound class.
+				; gWrapSound:prevsignal immediately returns -1 even if the music is
+				; playing, letting sCartoon continue and change to room 120 before
+				; intended.
+				;
+				; We fix it by using gWrapSound:handle instead. Sound's handle property
+				; is always set to 1 when sounds are playing, and cleared when stopped
+				; or disposed. Fix ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12282
+;;;				(if (== (gWrapSound prevSignal?) -1) (= cycles 1))
 				(if (not (gWrapSound handle?)) (= cycles 1))
+				; END OF BUGFIX
 			)
 			(27 (global2 newRoom: 120))
 		)
