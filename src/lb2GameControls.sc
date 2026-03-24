@@ -369,44 +369,31 @@
 	)
 	
 	(method (doit &tmp temp0)
-		; TEXT&SPEECH CHANGE: Allow changing to TEXT/SPEECH/BOTH in the settings.
-		;
-		; We modified view 995 adding an image for the new BOTH message mode in
-		; a new cel (2) of loop 13. We adjust iconMode:doit to make use of it
-		; and be able to switch to any of the 3 message modes. We also needed to
-		; change the cel that is shown when the settings window appears, in
-		; gcWin:open.
-;;;		(if 1
+		(if 1
+			; TEXT&SPEECH CHANGE: Allow changing to TEXT/SPEECH/BOTH in the settings.
+			;
+			; We modified view 995 adding an image for the new BOTH message mode in
+			; a new cel (2) of loop 13. We adjust iconMode:doit to make use of it
+			; and be able to switch to any of the 3 message modes. We also needed to
+			; change the cel that is shown when the settings window appears, in
+			; gcWin:open.
 ;;;			(switch global90
 ;;;				(1
-;;;					(= global90)
+;;;					(= global90 2)
 ;;;					(= temp0 1)
 ;;;				)
 ;;;				(2
-;;;					(= global90)
+;;;					(= global90 1)
 ;;;					(= temp0 0)
 ;;;				)
 ;;;			)
 ;;;			(DrawCel 995 13 temp0 154 110 15)
-;;;		else
-;;;			(Print font: gFont addText: {*** You're not playing a cd!} init:)
-;;;		)
-;;;		(self show:)
-		(switch global90
-			(1 
-				(if (DoSound sndGET_AUDIO_CAPABILITY)
-					(= global90 2)
-				else
-					(Print addText: {*** You're not playing a cd!} init:)
-				)
-			)
-			(2 (= global90 3))
-			(3 (= global90 1))
+			(= global90 (+ (mod global90 3) 1))
+			(DrawCel 995 13 (- global90 1) 156 110 15)
+			; END OF TEXT&SPEECH CHANGE (see also gcWin:open)
+		else
+			(Print font: gFont addText: {*** You're not playing a cd!} init:) ; this is never shown
 		)
-		(= temp0 (GetPort))
-		(SetPort 0)
-		(DrawCel 995 13 (- global90 1) 208 145 15)
-		(SetPort temp0)
-		; END OF TEXT&SPEECH CHANGE (see also gcWin:open)
+		(self show:)
 	)
 )
