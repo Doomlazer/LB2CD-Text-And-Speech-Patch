@@ -440,24 +440,28 @@
 				(= cycles 1)
 			)
 			(9
-				; BUGFIX: Prevent endless taxi driving + fix taxi drive prematurely ending.
+				; BUGFIX: Fix endless taxi driving + taxi drive prematurely ending.
 				;
-				; This code never worked as Sierra intended, they wanted the drive to last until
-				; both music and speech finished playing but it ends earlier. The floppy version
-				; lasts until the music ends. The test they used here for checking if music has
-				; ended isn't correct, and the one for the speech can cause endless looping.
+				; This code never worked as Sierra intended, they wanted the drive to
+				; last until both music and speech finished playing but it ends earlier.
+				; The floppy version lasts until the music ends. The test they used here
+				; for checking if music has ended isn't correct, and the one for the
+				; speech can cause endless looping.
 				;
-				; For the music: "(== (gWrapSound prevSignal?) -1)" would only work in the floppy
-				; version of the game, the CD and floppy versions have a different Sound class.
-				; They could have used "(== (gWrapSound handle?) 0)" instead.
+				; For the music: "(== (gWrapSound prevSignal?) -1)" would only work in
+				; the floppy version of the game, the CD and floppy versions have a
+				; different Sound class. They could use "(== (gWrapSound handle?) 0)"
+				; instead. Sound's handle property is always set to 1 when sounds are
+				; playing, and cleared when stopped or disposed.
 				;
-				; For the speech: "(== (DoAudio audPOSITION) -1)" can be problematic as it'll
-				; return 0 if the game failed to initialize the audio/voice card, failing the test
-				; and endlessly looping.
+				; For the speech: "(== (DoAudio audPOSITION) -1)" can be problematic as
+				; it'll return 0 if the game failed to initialize the audio/voice card,
+				; failing the test and endlessly looping.
 				;
-				; We fix it by properly checking if music has ended, we also check if gNarrator is
-				; initialized and the message mode isn't TEXT, which is a way better option to test
-				; if speech is ongoing. The travel now lasts what Sierra intended.
+				; We fix it by using Sound's handle property to check if music has ended,
+				; we also check if Rocco's (1902 13) or Laura's (gNarrator) talker is
+				; initialized and the message mode isn't TEXT, which works better to
+				; test if speech is ongoing. The travel now lasts what Sierra intended.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -470,7 +474,10 @@
 ;;;				(= cycles 1)
 				(if
 					(or
-						(and (gNarrator initialized?) (!= global90 1)) ; true if a message in mode SPEECH/BOTH is ongoing
+						(and
+							(or (gNarrator initialized?) ((ScriptID 1902 13) initialized?)) ; true if Laura's or Rocco's talker is initialized
+							(!= global90 1) ; true if a message in mode SPEECH/BOTH is ongoing
+						)
 						(gWrapSound handle?) ; true if music is playing
 					)
 					(-- state) ; reduce state by 1 to repeat the current one
@@ -547,11 +554,16 @@
 				(= seconds (Random 6 10))
 			)
 			(6
-				; BUGFIX: Prevent endless taxi driving + fix taxi drive prematurely ending.
+				; BUGFIX: Fix endless taxi driving + taxi drive prematurely ending.
 				;
-				; We fix it by properly checking if music has ended, we also check if gNarrator is
-				; initialized and message mode isn't 1, which is a way better option to test if
-				; speech is ongoing. The travel now lasts what Sierra intended.
+				; The tests to determine if music is playing and speech is ongoing are
+				; incorrect, see the bugfix in sDoTakeOffFlight:changeState(9) for more
+				; details, as the same applies here.
+				;
+				; We fix it by using Sound's handle property to check if music has ended,
+				; we also check if Bob's (1903 14) or Laura's (gNarrator) talker is
+				; initialized and the message mode isn't TEXT, which works better to
+				; test if speech is ongoing. The travel now lasts what Sierra intended.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -564,7 +576,10 @@
 ;;;				(= cycles 1)
 				(if
 					(or
-						(and (gNarrator initialized?) (!= global90 1)) ; true if a message in mode SPEECH/BOTH is ongoing
+						(and
+							(or (gNarrator initialized?) ((ScriptID 1903 14) initialized?)) ; true if Laura's or Bob's talker is initialized
+							(!= global90 1) ; true if a message in mode SPEECH/BOTH is ongoing
+						)
 						(gWrapSound handle?) ; true if music is playing
 					)
 					(-- state) ; reduce state by 1 to repeat the current one
