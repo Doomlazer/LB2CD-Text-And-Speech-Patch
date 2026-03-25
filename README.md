@@ -49,11 +49,13 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Trying to open the east door while it's wired shut flags it as open
     * Obtaining the wire at the right moment during the chase in act 5 makes the murderer no longer appear
     * Using the west exit at the right moment during the chase in act 5 makes the murderer no longer appear
-    * Laura can get stuck near the east exit
+    * Laura can get stuck near the east exit (an annoyance, not a softlock)
     * Closing the east door at the right moment during the chase in act 5 lets the murderer pass through the closed door
     * Closing the east door at the right moment during the chase in act 5 gives the player control while the 'death script' is ongoing
+    * When entering the Pterodactyl Room from Ziggy's close-up the cursor is a hand for 3 seconds but the player has control
   * Adds the following changes:
     * Remove the 3 seconds wait when the murderer appears during act 5
+    * Remove unnecessary blocking waits when entering the Pterodactyl Room from Ziggy's close-up
     * Make the murderer not chase after Laura during act 5 until she has finished moving
     * Make the murderer appear and kill Laura if the player tries to use the east exit during the chase in act 5
 * Patch 440.scr (Medieval Armory)
@@ -89,6 +91,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * It isn't possible to get the bone unless clicking on its surroundings
     * The bone can be picked up from far away
     * The music can abruptly change right before the start of act 6
+    * Using the north exit at the right moment during the chase in act 5 makes the murderer no longer appear
 * Patch 520.scr (Olympia's Office)
   * Fixes issues with:
     * Premature startup of act 5 when examining the countess in act 4
@@ -119,6 +122,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * The generic prisoners' animations sometimes unexpectedly re-trigger
     * The murderer's view partially disappears when messages are shown
 * Patch 920.scr has changes to remove the base control panel restrictions.
+* Patch 923.scr has changes to enable control panel access when insets are disposed.
 * Patch 2660.hep (Elevator) fixes a bug that caused a softlock when trying to reach the bottom left part of the elevator room.
 </details>
 
