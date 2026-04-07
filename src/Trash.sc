@@ -977,13 +977,38 @@
 		(super init: &rest)
 	)
 	
+	; BUGFIX: Don't let Trash have more priority than inTicket.
+	;
+	; Trash uses a custom handleEvent method to make it movable by drag and
+	; drop. Its doit method will keep changing its x and y properties to
+	; match the mouse coordinates whenever the player is dragging it.
+	;
+	; gX and gY are used to determine the mouse coordinates, but gY takes
+	; into account the extra 10 pixels on top of the screen (the black space
+	; used to show the iconbar when hovered), which are outside of the
+	; room's coordinate system (the top-left of the room returns gY 10 gX 0).
+	; This means that there's a 10px mismatch between y and gY, so Trash
+	; will be able to obtain an y value higher than 190, which in turn
+	; gives it more priority than anything else in the room (the higher the
+	; value of the y property, the higher the priority). This is a problem
+	; when inTicket (the ticket close-up) is being shown, as it's supposed
+	; to appear on top of everything else but instances of Trash can be
+	; above it.
+	;
+	; We fix it by giving Trash's y property the value of "gY - 10" instead
+	; of gY, correcting the mismatch and fixing its priority. We then use z
+	; to preserve its original y location on screen without altering its
+	; priority.
 	(method (doit)
 		(if (and (== theTrash self) (self inBounds:))
 			(= x gX)
-			(= y gY)
+;;;			(= y gY)
+			(= y (- gY 10))
+			(= z -10) ; added
 		)
 		(super doit: &rest)
 	)
+	; END OF BUGFIX
 	
 	(method (dispose)
 		(gLb2MDH delete: self)
