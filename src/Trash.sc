@@ -1121,6 +1121,19 @@
 				)
 			)
 			(1 (gLb2Messager say: 3 1 4))
+			; BUGFIX: Fix trash on the corner not exiting the room when using the
+			; EXIT verb on it.
+			;
+			; Using the exit icon on the trash on the corner of the taxi (present
+			; when Bob is the driver) doesn't exit the room. cornerTrash:doVerb
+			; misses a case and code to handle the EXIT verb (13).
+			;
+			; We fix it by adding a case to handle the EXIT verb to
+			; cornerTrash:doVerb, based on the ones present in other objects.
+			(13 ; EXIT
+				(global2 newRoom: (if gGNumber else 210))
+			)
+			; END OF BUGFIX
 			(else 
 				(super doVerb: theVerb &rest)
 			)
