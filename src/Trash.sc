@@ -820,29 +820,89 @@
 	)
 )
 
-(instance inTicket of Inset
+; BUGFIX & IMPROVEMENT: Fix endless taxi drive after looking at the
+; ticket and make the ticket inset not pause the street animation.
+;
+; When the taxi driver is Bob, the ticket is initialized and appears
+; in the taxi. While the taxi is already moving, the room script will be
+; sMoveBuildings, but using the LOOK verb on the ticket at that moment
+; will briefly set showTicket as the room script, interrupting
+; sMoveBuildings and making it unable to finish. This results in an
+; infinite taxi drive.
+;
+; Additionally, looking at the ticket will set the inTicket inset so it
+; displays a close-up of the ticket. Insets aren't modeless, so if the
+; street animation is ongoing, it will be paused while the close-up is
+; being shown.
+;
+; We approach both things by creating a fake inset, this involves making
+; inTicket be a View instead, and adding a new instance of Feature that
+; will initialize along with inTicket. This Feature will act as an
+; invisible overlay that covers the whole room and will dispose itself
+; and inTicket whenever a verb is used on it. We also modify ticket and
+; showTicket, ticket will directly initialize inTicket, showTicket will
+; only display the LOOK message when inTicket opens and will be set as
+; win1's script. Our "inset" won't pause the street animation anymore
+; or interfer with the room's script, fixing both issues.
+;;;(instance inTicket of Inset
+(instance inTicket of View
 	(properties
 		view 250
 		x 190
-		y 154
-		disposeNotOnMe 1
+;;;		y 154
+		y 190 ; highest y (= max priority)
+;;;		disposeNotOnMe 1
+		z 36 ; newly added property, compensate y to retain its correct location on screen
 		noun 9
+	)
+	
+	(method (init) ; newly added method
+		(overlay init:)
+		(super init: &rest)
+	)
+	
+	(method (doVerb theVerb)
+;;;		(switch theVerb
+;;;			(4
+;;;				((ScriptID 21 0) doit: 770)
+;;;				(ticket dispose:)
+;;;				(inTicket dispose:)
+;;;				(gEgo get: -1 1)
+;;;				(proc0_3 27)
+;;;			)
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+		(if (== theVerb 1) ; LOOK
+			(super doVerb: theVerb &rest)
+		else
+			(if (== theVerb 4) ; DO
+				(overlay dispose:)
+			)
+			(ticket doVerb: theVerb &rest)
+		)
+	)
+)
+
+(instance overlay of Feature ; newly added instance of Feature
+	(properties
+	x 0
+	y 189 ; second highest y (= highest priority after inTicket)
+	nsRight 319 ; max width
+	nsBottom 189 ; max height
 	)
 	
 	(method (doVerb theVerb)
 		(switch theVerb
-			(4
-				((ScriptID 21 0) doit: 770)
-				(ticket dispose:)
-				(inTicket dispose:)
-				(gEgo get: -1 1)
-				(proc0_3 27)
-			)
-			(13
+			(13 ; EXIT
 				(global2 newRoom: (if gGNumber else 210))
 			)
-			(else 
-				(super doVerb: theVerb &rest)
+			(else
+				(inTicket dispose:)
+				(self dispose:)
 			)
 		)
 	)
@@ -854,11 +914,11 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
-				(global2 setInset: inTicket)
+;;;				(global2 setInset: inTicket) ; unneded, ticket now directly initializes inTicket
 				(= cycles 5)
 			)
 			(1
-				(inTicket doVerb: 1)
+				(inTicket doVerb: 1) ; LOOK
 				(self dispose:)
 			)
 		)
@@ -875,26 +935,34 @@
 		signal $0010
 	)
 	
-	(method (doVerb theVerb param2)
+;;;	(method (doVerb theVerb param2) ; param2 is never needed
+	(method (doVerb theVerb)
 		(switch theVerb
-			(1
-				(global2 setScript: showTicket)
+;;;			(1
+;;;				(global2 setScript: showTicket)
+;;;			)
+			(1 ; LOOK
+				(inTicket init:)
+				(win1 setScript: showTicket) ; attach showTicket to win1 instead (fixes infinite drive)
 			)
-			(4
+			(4 ; DO
 				(gEgo get: 1)
 				(proc0_3 27)
 				((ScriptID 21 0) doit: 770)
+				(inTicket dispose:) ; newly added call
 				(self dispose:)
 			)
-			(13
+			(13 ; EXIT
 				(global2 newRoom: (if gGNumber else 210))
 			)
 			(else 
-				(super doVerb: theVerb param2 &rest)
+;;;				(super doVerb: theVerb param2 &rest) ; param2 is never needed
+				(super doVerb: theVerb &rest)
 			)
 		)
 	)
 )
+; END OF BUGFIX & IMPROVEMENT (see also Trash:handleEvent)
 
 (instance license of Feature
 	(properties
@@ -1017,7 +1085,8 @@
 	)
 	
 	; TWEAK: Don't let Trash handle mouse button releases while it isn't
-	; being dragged or secondary mouse button presses.
+	; being dragged, or secondary mouse button presses. Make Trash
+	; compatible with our modified inTicket.
 	;
 	; Trash uses a custom handleEvent method to make it movable by drag and
 	; drop. Drag and drop works with the primary or secondary mouse button.
@@ -1027,9 +1096,15 @@
 	; Additionally, Trash handles mouse button releases even when trash
 	; isn't being dragged, which is unnecessary.
 	;
+	; Lastly, since we've changed the inTicket inset to make it be a View
+	; instead (to deal with another bug), Trash will still be able to handle
+	; mouse clicks when inTicket is initialized, creating an inconvenience.
+	; We need to prevent this.
+	;
 	; We modify this method adding tests to make it only handle primary
-	; mouse clicks and to only handle button releases while Trash is
-	; being dragged.
+	; mouse button clicks, to make it ignore events when inTicket is part of
+	; the cast and to only handle mouse button releases while trash is being
+	; dragged.
 	(method (handleEvent pEvent)
 		(cond 
 			(
@@ -1038,6 +1113,7 @@
 					(== (pEvent type?) evKEYBOARD)
 					(== (gIconBar curIcon?) (gIconBar at: 2))
 					(self onMe: pEvent)
+					(not (gOldCast contains: inTicket)) ; added test (is inTicket not part of the cast?)
 				)
 				(if (!= theTrash self)
 					(= theTrash self)
@@ -1053,6 +1129,7 @@
 					(not (pEvent modifiers?)) ; added test (no event modifiers? = only primary mouse button)
 					(== (gIconBar curIcon?) (gIconBar at: 2))
 					(self onMe: pEvent)
+					(not (gOldCast contains: inTicket)) ; added test (is inTicket not part of the cast?)
 				)
 				(noise number: 54 loop: 1 flags: 1 play:)
 				(= theTrash self)
@@ -1070,7 +1147,7 @@
 			(else (super handleEvent: pEvent &rest))
 		)
 	)
-	; END OF TWEAK
+	; END OF TWEAK (see also inTicket)
 	
 	(method (doVerb theVerb)
 		(switch theVerb
