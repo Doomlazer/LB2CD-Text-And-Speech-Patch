@@ -1016,6 +1016,20 @@
 		(super dispose:)
 	)
 	
+	; TWEAK: Don't let Trash handle mouse button releases while it isn't
+	; being dragged or secondary mouse button presses.
+	;
+	; Trash uses a custom handleEvent method to make it movable by drag and
+	; drop. Drag and drop works with the primary or secondary mouse button.
+	; However, no other objects in the game handle secondary mouse button
+	; clicks, so apart from seeming unintentional, it isn't intuitive.
+	;
+	; Additionally, Trash handles mouse button releases even when trash
+	; isn't being dragged, which is unnecessary.
+	;
+	; We modify this method adding tests to make it only handle primary
+	; mouse clicks and to only handle button releases while Trash is
+	; being dragged.
 	(method (handleEvent pEvent)
 		(cond 
 			(
@@ -1036,6 +1050,7 @@
 			(
 				(and
 					(== (pEvent type?) evMOUSEBUTTON)
+					(not (pEvent modifiers?)) ; added test (no event modifiers? = only primary mouse button)
 					(== (gIconBar curIcon?) (gIconBar at: 2))
 					(self onMe: pEvent)
 				)
@@ -1046,6 +1061,7 @@
 			(
 				(and
 					(== (pEvent type?) evMOUSERELEASE)
+					(== theTrash self) ; added test (trash is being dragged)
 					(self onMe: pEvent)
 				)
 				(= theTrash 0)
@@ -1054,6 +1070,7 @@
 			(else (super handleEvent: pEvent &rest))
 		)
 	)
+	; END OF TWEAK
 	
 	(method (doVerb theVerb)
 		(switch theVerb
