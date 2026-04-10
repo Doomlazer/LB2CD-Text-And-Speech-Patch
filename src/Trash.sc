@@ -417,16 +417,6 @@
 	(method (changeState newState &tmp [temp0 50])
 		(switch (= state newState)
 			(0
-				; BUGFIX: Fix Laura's messages pausing street animation during taxi travels.
-				;
-				; If the player uses a verb on any object in the taxi, the moving street
-				; animation will pause until the message is disposed. This doesn't happen
-				; while Rocco/Bob talk. The talker used for Laura wasn't set as modeless,
-				; unlike Rocco/Bob talkers.
-				;
-				; We fix it by setting gNarrator (99) as modeless. It will reset on newRoom.
-				(gNarrator modeless: 1)
-				; END OF BUGFIX (the same has been done in sMoveBuildings:changeState(0))
 				(gGame handsOff:)
 				(User canInput: 1)
 				(= cycles 1)
@@ -495,10 +485,11 @@
 				; it'll return 0 if the game failed to initialize the audio/voice card,
 				; failing the test and endlessly looping.
 				;
-				; We fix it by using Sound's handle property to check if music has ended,
-				; we also check if Rocco's (1902 13) or Laura's (gNarrator) talker is
-				; initialized and the message mode isn't TEXT, which works better to
-				; test if speech is ongoing. The travel now lasts what Sierra intended.
+				; We fix it by using Sound's handle property to detect if music isn't
+				; playing, we also add a check to determine if there's digital audio
+				; capability. The travel will last what Sierra intended, ending if music
+				; and sounds aren't playing. It won't mind if sounds are playing when
+				; there isn't digital audio support, preventing the endless drive bug.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -512,8 +503,8 @@
 				(if
 					(or
 						(and
-							(or (gNarrator initialized?) ((ScriptID 1902 13) initialized?)) ; true if Laura's or Rocco's talker is initialized
-							(!= global90 1) ; true if a message in mode SPEECH/BOTH is ongoing
+							(DoSound sndGET_AUDIO_CAPABILITY) ; true if there's digital audio support
+							(!= (DoAudio audPOSITION) -1) ; true if digital sounds aren't playing
 						)
 						(gWrapSound handle?) ; true if music is playing
 					)
@@ -556,11 +547,6 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
-				; BUGFIX: Fix Laura's messages pausing street animation during taxi travels.
-				;
-				; We fix it by setting gNarrator (99) as modeless. It will reset on newRoom.
-				(gNarrator modeless: 1)
-				; END OF BUGFIX (the same has been done in sDoTakeOffFlight:changeState(0))
 				(win1 setCycle: Fwd)
 				(win2 setCycle: Fwd)
 				(win3 setCycle: Fwd)
@@ -597,10 +583,11 @@
 				; incorrect, see the bugfix in sDoTakeOffFlight:changeState(9) for more
 				; details, as the same applies here.
 				;
-				; We fix it by using Sound's handle property to check if music has ended,
-				; we also check if Bob's (1903 14) or Laura's (gNarrator) talker is
-				; initialized and the message mode isn't TEXT, which works better to
-				; test if speech is ongoing. The travel now lasts what Sierra intended.
+				; We fix it by using Sound's handle property to detect if music isn't
+				; playing, we also add a check to determine if there's digital audio
+				; capability. The travel will last what Sierra intended, ending if music
+				; and sounds aren't playing. It won't mind if sounds are playing when
+				; there isn't digital audio support, preventing the endless drive bug.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -614,8 +601,8 @@
 				(if
 					(or
 						(and
-							(or (gNarrator initialized?) ((ScriptID 1903 14) initialized?)) ; true if Laura's or Bob's talker is initialized
-							(!= global90 1) ; true if a message in mode SPEECH/BOTH is ongoing
+							(DoSound sndGET_AUDIO_CAPABILITY) ; true if there's digital audio support
+							(!= (DoAudio audPOSITION) -1) ; true if digital sounds aren't playing
 						)
 						(gWrapSound handle?) ; true if music is playing
 					)
