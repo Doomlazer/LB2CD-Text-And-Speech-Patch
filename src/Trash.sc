@@ -78,16 +78,53 @@
 		)
 	)
 	
-	(method (doVerb theVerb)
+	; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+	;
+	; When using the TALK verb on a View/Feature/Prop that doesn't have a
+	; specific TALK case (2) in its doVerb, and instead passes that verb to
+	; its super class, a random message (out of 4) from 0.msg will be shown.
+	; This is the correct expected behavior, but the fourth message for the
+	; TALK verb is too lengthy to properly fit.
+	;
+	; rm250 sets gNarrator's y property to 120 during initialization, making
+	; messages appear close to the bottom of the screen. If the fourth TALK
+	; message from 0.msg (which is 7 lines long) is shown, the game will
+	; enlarge the message box  in a glitchy way to display this message that
+	; otherwise wouldn't fit. When that message is disposed, graphical
+	; remains of its box will stay on screen until the room changes. ScummVM
+	; isn't affected by this bug (the glitchy window is shown but it's
+	; properly cleared after being disposed).
+	;
+	; We fix it by adding a TALK case to rm250:doVerb, it will choose a
+	; random number between 1 and 4 to display one of the TALK messages, but
+	; temporarily setting gNarrator's y property to 96 if the random number
+	; is 4 (fourth message), this way the message will always fit. We then
+	; add a TALK case to every other object that doesn't have a specific
+	; case in its doVerb, to pass the verb to rm250:doVerb so it handles it
+	; in their place.
+;;;	(method (doVerb theVerb)
+	(method (doVerb theVerb &tmp temp0) ; we need a new variable to store the random number
 		(switch theVerb
-			(13
+			(13 ; EXIT
 				(global2 newRoom: (if gGNumber else 210))
 			)
+			; START OF ADDITIONS
+			(2 ; TALK
+				(= temp0 (Random 1 4))
+					(if (== temp0 4)
+						(gNarrator y: 96)
+					)
+				(gLb2Messager say: 0 2 0 temp0 0 0)
+				(gNarrator y: 120)
+			)
+			; END OF ADDITIONS
 			(else 
 				(super doVerb: theVerb &rest)
 			)
 		)
 	)
+	; END OF BUGFIX (see also the doVerb method of win1/2/3/4/5, ticket,
+	; license, Trash and cornerTrash)
 	
 	(method (newRoom)
 		(if inset (inset dispose:))
@@ -714,14 +751,29 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb TALK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win2/3/4/5, rm250, ticket,
+		; license, Trash and cornerTrash)
 	)
 )
 
@@ -738,14 +790,29 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb TALK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win1/3/4/5, rm250, ticket,
+		; license, Trash and cornerTrash)
 	)
 )
 
@@ -761,14 +828,29 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb TALK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win1/2/4/5, rm250, ticket,
+		; license, Trash and cornerTrash)
 	)
 )
 
@@ -785,14 +867,29 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb TALK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win1/2/3/5, rm250, ticket,
+		; license, Trash and cornerTrash)
 	)
 )
 
@@ -809,14 +906,29 @@
 	)
 	
 	(method (doVerb theVerb)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb TALK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win1/2/3/4, rm250, ticket,
+		; license, Trash and cornerTrash)
 	)
 )
 
@@ -945,6 +1057,16 @@
 				(inTicket init:)
 				(win1 setScript: showTicket) ; attach showTicket to win1 instead (fixes infinite drive)
 			)
+			; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+			;
+			; Continuation of the bugfix described in rm250:doVerb.
+			;
+			; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+			(2 ; TALK
+				(global2 doVerb: theVerb &rest)
+			)
+			; END OF BUGFIX (see also the doVerb method of win1/2/3/4/5, rm250,
+			; license, Trash and cornerTrash)
 			(4 ; DO
 				(gEgo get: 1)
 				(proc0_3 27)
@@ -981,14 +1103,29 @@
 		else
 			(= noun 8)
 		)
-		(switch theVerb
-			(13
-				(global2 newRoom: (if gGNumber else 210))
-			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+		; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+		;
+		; Continuation of the bugfix described in rm250:doVerb.
+		;
+		; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+		; While we're at it, since the code for the EXIT verb (13) is identical
+		; to the one used in rm250:doVerb, we also pass it. We use OneOf to pass
+		; both verbs.
+;;;		(switch theVerb
+;;;			(13
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(if (proc999_5 theVerb 2 13) ; OneOf theVerb LOOK EXIT
+			(global2 doVerb: theVerb &rest)
+		else
+			(super doVerb: theVerb &rest)
 		)
+		; END OF BUGFIX (see also the doVerb method of win1/2/3/4/5, rm250,
+		; ticket, Trash and cornerTrash)
 	)
 )
 
@@ -1155,6 +1292,16 @@
 				(global2 newRoom: (if gGNumber else 210))
 			)
 			(1 (gLb2Messager say: 3 1 4))
+			; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+			;
+			; Continuation of the bugfix described in rm250:doVerb.
+			;
+			; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+			(2 ; TALK
+				(global2 doVerb: theVerb &rest)
+			)
+			; END OF BUGFIX (see also the doVerb method of win1/2/3/4/5, rm250,
+			; ticket, license and cornerTrash)
 			(else 
 				(super doVerb: theVerb &rest)
 			)
@@ -1240,6 +1387,17 @@
 				)
 			)
 			(1 (gLb2Messager say: 3 1 4))
+			; BUGFIX: Fix graphical glitches left by the messager box (TALK verb).
+			;
+			; Continuation of the bugfix described in rm250:doVerb.
+			;
+			; We fix it by adding a TALK case and passing the verb to rm250:doVerb.
+			(2 ; TALK
+				(global2 doVerb: theVerb &rest)
+			)
+			; END OF BUGFIX (see also the doVerb method of win1/2/3/4/5, rm250,
+			; ticket, license and Trash)
+			;
 			; BUGFIX: Fix trash on the corner not exiting the room when using the
 			; EXIT verb on it.
 			;
