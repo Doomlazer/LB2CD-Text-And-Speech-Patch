@@ -22,6 +22,12 @@
 	local0
 	theTrash
 	local2
+	; TWEAK: Add isBob local var.
+	;
+	; We frequently need to test if the driver is Bob or Rocco in this room.
+	; A dedicated variable makes the tests simpler and more performant.
+	isBob
+	; END OF TWEAK
 )
 (instance rm250 of LBRoom
 	(properties
@@ -54,6 +60,7 @@
 				)
 				(ticket init:)
 			)
+			(= isBob 1) ; TWEAK: Addition, we set isBob here
 			(DDriver addToPic:)
 		else
 			(CDriver addToPic:)
@@ -67,13 +74,22 @@
 		(gNarrator y: 120)
 		(cond 
 			((and (== gGNumber 300) (gEgo wearingGown?)) (self setScript: sACTBREAK))
-			((not (gEgo has: 6))
-				(if (gOldCast contains: trash1)
-					(self setScript: sNoPressPassD)
-				else
-					(self setScript: sNoPressPassC)
-				)
-			)
+			; TWEAK: Adapt rm250:init to work with the combined sNoPressPass script.
+			;
+			; We've combined sNoPressPassD+sNoPressPassC in a script named
+			; sNoPressPass that now works for either Rocco or Bob when the room
+			; initializes and the press pass isn't in the inventory.
+			;
+			; We modify rm250:init to set sNoPressPass for both taxi drivers.
+;;;			((not (gEgo has: 6))
+;;;				(if (gOldCast contains: trash1)
+;;;					(self setScript: sNoPressPassD) ; Bob -> sNoPressPassD
+;;;				else
+;;;					(self setScript: sNoPressPassC) ; Rocco -> sNoPressPassC
+;;;				)
+;;;			)
+			((not (gEgo has: 6)) (self setScript: sNoPressPass)) ; Rocco/Bob -> sNoPressPass
+			; END OF TWEAK (see also sNoPressPass)
 			(else (self setScript: sHasPressPass))
 		)
 	)
@@ -200,7 +216,22 @@
 	)
 )
 
-(instance sNoPressPassD of Script
+; TWEAK: Combine sNoPressPassD+sNoPressPassC.
+;
+; If the player enters the room without the press pass, the taxi driver
+; will have a conversation with Laura. The messages are different if the
+; taxi driver is Rocco or Bob, so they organized this in two different
+; scripts, sNoPressPassD for Bob and sNoPressPassC for Rocco. The
+; differences of these scripts are minimal, and combining both of them
+; makes the compiled script file smaller while reducing the heap usage,
+; which are welcome optimizations after all our other additions.
+;
+; We combine sNoPressPassD and sNoPressPassC and rename the resulting
+; script to sNoPressPass. We make use of our new isBob variable to test
+; who the driver is and change its behavior. rm250:init also required
+; changes to set this script instead of the other two.
+;;;(instance sNoPressPassD of Script
+(instance sNoPressPass of Script
 	(properties)
 	
 	(method (changeState newState)
@@ -211,20 +242,23 @@
 				(= cycles 1)
 			)
 			(1
-				(gLb2Messager say: 1 0 9 1 self)
+;;;				(gLb2Messager say: 1 0 9 1 self)
+				(gLb2Messager say: 1 0 (if isBob 9 else 1) 1 self)
 			)
 			(2
 				(gLb2Messager say: 1 0 10 1 self)
 			)
 			(3
-				(gLb2Messager say: 1 0 9 2 self)
+;;;				(gLb2Messager say: 1 0 9 2 self)
+				(gLb2Messager say: 1 0 (if isBob 9 else 1) 2 self)
 			)
 			(4
 				(gGame handsOn:)
 				(= seconds 15)
 			)
 			(5
-				(gLb2Messager say: 1 0 9 3 self)
+;;;				(gLb2Messager say: 1 0 9 3 self)
+				(gLb2Messager say: 1 0 (if isBob 9 else 1) 3 self)
 			)
 			(6
 				(global2 newRoom: (if gGNumber else 210))
@@ -232,39 +266,40 @@
 		)
 	)
 )
+; END OF TWEAK (see also rm250:init)
 
-(instance sNoPressPassC of Script
-	(properties)
-	
-	(method (changeState newState)
-		(switch (= state newState)
-			(0
-				(gGame handsOff:)
-				(User canInput: 1)
-				(= cycles 1)
-			)
-			(1
-				(gLb2Messager say: 1 0 1 1 self)
-			)
-			(2
-				(gLb2Messager say: 1 0 10 1 self)
-			)
-			(3
-				(gLb2Messager say: 1 0 1 2 self)
-			)
-			(4
-				(gGame handsOn:)
-				(= seconds 15)
-			)
-			(5
-				(gLb2Messager say: 1 0 1 3 self)
-			)
-			(6
-				(global2 newRoom: (if gGNumber else 210))
-			)
-		)
-	)
-)
+;;;(instance sNoPressPassC of Script  ; unneeded, we've combined sNoPressPassC and sNoPressPassD
+;;;	(properties)
+;;;	
+;;;	(method (changeState newState)
+;;;		(switch (= state newState)
+;;;			(0
+;;;				(gGame handsOff:)
+;;;				(User canInput: 1)
+;;;				(= cycles 1)
+;;;			)
+;;;			(1
+;;;				(gLb2Messager say: 1 0 1 1 self)
+;;;			)
+;;;			(2
+;;;				(gLb2Messager say: 1 0 10 1 self)
+;;;			)
+;;;			(3
+;;;				(gLb2Messager say: 1 0 1 2 self)
+;;;			)
+;;;			(4
+;;;				(gGame handsOn:)
+;;;				(= seconds 15)
+;;;			)
+;;;			(5
+;;;				(gLb2Messager say: 1 0 1 3 self)
+;;;			)
+;;;			(6
+;;;				(global2 newRoom: (if gGNumber else 210))
+;;;			)
+;;;		)
+;;;	)
+;;;)
 
 (instance sHasPressPass of Script
 	(properties)
@@ -279,9 +314,12 @@
 			(1
 				(cond 
 					(
-					(and (gOldCast contains: trash1) (not (proc0_2 26))) (client setScript: s1stTimeInDirtyTaxi self))
-					((gOldCast contains: trash1) (gLb2Messager say: 1 0 7 6 self))
-					((not (gOldCast contains: trash1)) (gLb2Messager say: 1 0 8 0 self))
+;;;					(and (gOldCast contains: trash1) (not (proc0_2 26))) (client setScript: s1stTimeInDirtyTaxi self))
+					(and isBob (not (proc0_2 26))) (client setScript: s1stTimeInDirtyTaxi self)) ; TWEAK: Use our new isBob local var
+;;;					((gOldCast contains: trash1) (gLb2Messager say: 1 0 7 6 self))
+					(isBob (gLb2Messager say: 1 0 7 6 self)) ; TWEAK: Use our new isBob local var
+;;;					((not (gOldCast contains: trash1)) (gLb2Messager say: 1 0 8 0 self))
+					((not isBob) (gLb2Messager say: 1 0 8 0 self)) ; TWEAK: Use our new isBob local var
 					(else (= cycles 1))
 				)
 			)
@@ -356,7 +394,8 @@
 				(= cycles 1)
 			)
 			(1
-				(if (not (gOldCast contains: trash1))
+;;;				(if (not (gOldCast contains: trash1))
+				(if (not isBob) ; TWEAK: Use our new isBob local var
 					(gLb2Messager say: 5 11 8 0 self)
 				else
 					(gLb2Messager say: 4 11 7 0 self)
@@ -374,7 +413,8 @@
 					(519
 						(= local2 1)
 						(= local0 250)
-						(if (not (gOldCast contains: trash1))
+;;;						(if (not (gOldCast contains: trash1))
+						(if (not isBob) ; TWEAK: Use our new isBob local var
 							(gLb2Messager say: 17 14 8 0)
 						else
 							(gLb2Messager say: 17 14 7 0)
@@ -383,7 +423,8 @@
 					(-1 (= local0 250))
 					(else 
 						(= local0 250)
-						(if (not (gOldCast contains: trash1))
+;;;						(if (not (gOldCast contains: trash1))
+						(if (not isBob) ; TWEAK: Use our new isBob local var
 							(gLb2Messager say: 12 14 8 0)
 						else
 							(gLb2Messager say: 12 14 7 0)
@@ -393,11 +434,30 @@
 				(= cycles 1)
 			)
 			(3
-				(cond 
-					((or (== local0 gGNumber) (== local0 gNumber)) (gGame handsOn:) (= cycles 1))
-					((not (gOldCast contains: trash1)) (global2 setScript: sDoTakeOffFlight))
-					(else (global2 setScript: sMoveBuildings))
+				; TWEAK: Adapt sWhereToBud to work with the combined taxi drive script.
+				;
+				; We've combined sDoTakeOffFlight+sMoveBuildings, so sDoTakeOffFlight
+				; can work for either Rocco or Bob after the press pass is used and a
+				; valid place to travel to is chosen.
+				;
+				; We modify sWhereToBud to always set sDoTakeOffFlight for both taxi
+				; drivers, as sMoveBuildings is no longer needed.
+;;;				(cond
+;;;					((or (== local0 gGNumber) (== local0 gNumber)) (gGame handsOn:) (= cycles 1))
+;;;					((not (gOldCast contains: trash1)) (global2 setScript: sDoTakeOffFlight)) ; Bob -> sDoTakeOffFlight
+;;;					(else (global2 setScript: sMoveBuildings)) ; Rocco -> sMoveBuildings
+;;;				)
+				(if
+					(or
+						(== local0 gGNumber)
+						(== local0 gNumber)
+					)
+					(gGame handsOn:)
+					(= cycles 1)
+				else
+					(global2 setScript: sDoTakeOffFlight) ; Rocco/Bob -> sDoTakeOffFlight
 				)
+				; END OF TWEAK (see also sDoTakeOffFlight)
 			)
 			(4
 				(gIconBar enable: 5)
@@ -414,11 +474,27 @@
 (instance sDoTakeOffFlight of Script
 	(properties)
 	
-	(method (changeState newState &tmp [temp0 50])
+;;;	(method (changeState newState &tmp [temp0 50])
+	(method (changeState newState) ; TWEAK: removed temp0, it's never used
 		(switch (= state newState)
+			; TWEAK: Optimize states 0 and 2 and remove unnecessary code.
+			;
+			; This script becomes the room's script once the player uses the press
+			; pass on the taxi driver and chooses a valid place to travel to.
+			;
+			; State 0 doesn't really need handsOff or setting canInput. The game is
+			; already in hands-off with input enabled when this script is set as the
+			; room script by sWhereToBud:changeState(3).
+			;
+			; We disable that code and move handsOn and the gIconBar:disable call
+			; from state 2 to state 0. The sooner this is done, the better, since
+			; it resets the mouse cursor and prevents the player from being able to
+			; use the press pass again while the taxi drive is ongoing.
 			(0
-				(gGame handsOff:)
-				(User canInput: 1)
+;;;				(gGame handsOff:)
+;;;				(User canInput: 1)
+				(gGame handsOn:) ; moved here from state 2
+				(gIconBar disable: 5 6 0) ; moved here from state 2
 				(= cycles 1)
 			)
 			(1
@@ -431,10 +507,12 @@
 			)
 			(2
 				(gWrapSound number: 250 loop: 1 flags: 1 play:)
-				(gGame handsOn:)
-				(gIconBar disable: 5 6 0)
+;;;				(gGame handsOn:)
+;;;				(gIconBar disable: 5 6 0)
 				(= cycles 1)
 			)
+			; END OF TWEAK (see also the other states of this script and
+			; sWhereToBud:changeState(3))
 			(3
 				(gGameMusic2 send: 2 224 1000)
 				(= cycles 1)
@@ -448,15 +526,42 @@
 				(= cycles 1)
 			)
 			(6
+				; TWEAK: Combine sDoTakeOffFlight+sMoveBuildings (1/2).
+				;
+				; The game uses a different script for Rocco and Bob when the taxi drive
+				; starts. sDoTakeOffFlight is used for Rocco and sMoveBuildings for Bob.
+				; We combine both in sDoTakeOffFlight and get rid of sMoveBuildings,
+				; this way both taxi drivers will use the same script, the compiled
+				; patch will be smaller and it'll reduce heap usage.
+				;
+				; We test who the driver is by using our new isBob local variable and
+				; make the state behave differently for each driver, basing the code for
+				; Bob on sMoveBuildings. We don't bring here the random wait of
+				; sMoveBuildings(5), as the next state for Bob will be 9 and it will
+				; already wait until the music ends.
+;;;				(gGameMusic2 send: 2 224 4000)
+;;;				((ScriptID 1902 13) modeless: 1) ; no effect, already modeless by default
+;;;				((ScriptID 1903 14) modeless: 1) ; no effect, already modeless by default
+;;;				(= register (Random 11 17))
+;;;					(cond
+;;;						((== register 17) (= seconds 8))
+;;;						((== register 16) (= seconds 8))
+;;;						(else (gLb2Messager say: 10 0 register 0 self))
+;;;					)
 				(gGameMusic2 send: 2 224 4000)
-				((ScriptID 1902 13) modeless: 1)
-				((ScriptID 1903 14) modeless: 1)
-				(= register (Random 11 17))
-				(cond 
-					((== register 17) (= seconds 8))
-					((== register 16) (= seconds 8))
-					(else (gLb2Messager say: 10 0 register 0 self))
+				(if (not isBob) ; Rocco
+					(= register (Random 11 17))
+						(if (< register 16)
+							(gLb2Messager say: 10 0 register 0 self) ; small talk, cue
+						else
+							(= seconds 8)
+						)
+				else ; Bob
+					(= state 8) ; make the next state be 9
+					(= cycles 1)
 				)
+				; END OF TWEAK (see also the other states of this script and
+				; sWhereToBud:changeState(3))
 			)
 			(7
 				(gGameMusic2 send: 2 224 3000)
@@ -467,29 +572,33 @@
 				(= cycles 1)
 			)
 			(9
-				; BUGFIX: Fix endless taxi driving + taxi drive prematurely ending.
+				; BUGFIX: Fix endless taxi drive and taxi drive prematurely ending.
 				;
-				; This code never worked as Sierra intended, they wanted the drive to
-				; last until both music and speech finished playing but it ends earlier.
-				; The floppy version lasts until the music ends. The test they used here
-				; for checking if music has ended isn't correct, and the one for the
-				; speech can cause endless looping.
+				; This code never worked as Sierra intended, they wanted the taxi drive
+				; to last until both music and speech finished playing, but it ends
+				; earlier. The test they used here to check if music has ended isn't
+				; correct, and the one for the speech can cause endless looping.
 				;
-				; For the music: "(== (gWrapSound prevSignal?) -1)" would only work in
-				; the floppy version of the game, the CD and floppy versions have a
-				; different Sound class. They could use "(== (gWrapSound handle?) 0)"
-				; instead. Sound's handle property is always set to 1 when sounds are
-				; playing, and cleared when stopped or disposed.
+				; For the music, checking Sound's prevSignal property only works in the
+				; floppy game, the CD version has a different Sound class. They could
+				; have checked Sound's handle property instead, it's always set to 1
+				; when sounds are playing and cleared when stopped/disposed.
 				;
-				; For the speech: "(== (DoAudio audPOSITION) -1)" can be problematic as
-				; it'll return 0 if the game failed to initialize the audio/voice card,
-				; failing the test and endlessly looping.
+				; For the speech, testing DoAudio's audPOSITION can be problematic as
+				; it'll return 0 if the game couldn't initialize the audio/voice card,
+				; failing the test and letting the state endlessly loop.
 				;
-				; We fix it by using Sound's handle property to detect if music isn't
-				; playing, we also add a check to determine if there's digital audio
-				; capability. The travel will last what Sierra intended, ending if music
-				; and sounds aren't playing. It won't mind if sounds are playing when
-				; there isn't digital audio support, preventing the endless drive bug.
+				; We fix the premature end of the taxi drive by testing Sound's handle
+				; property to determine if music is playing, if the test passes we set
+				; gWrapSound's client property so it points to this script, and reduce
+				; the state by 1. The script will stay idle, and will be cued by
+				; gWrapSound once music ends, that will re-run this state, the test
+				; won't pass and it'll change to state 10.
+				;
+				; We remove the DoAudio test, we'll instead test in state 10 if the
+				; drivers' talkers are initialized, as they're the only possible source
+				; of speech that could be unpredictable (their talkers are modeless).
+				; That new test can't cause an endless taxi drive.
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -500,20 +609,60 @@
 ;;;					(-- state)
 ;;;				)
 ;;;				(= cycles 1)
-				(if
-					(or
-						(and
-							(DoSound sndGET_AUDIO_CAPABILITY) ; true if there's digital audio support
-							(!= (DoAudio audPOSITION) -1) ; true if digital sounds aren't playing
-						)
-						(gWrapSound handle?) ; true if music is playing
-					)
-					(-- state) ; reduce state by 1 to repeat the current one
+				(if (gWrapSound handle?) ; is music is playing?
+					(gWrapSound client: self) ; the script will be cued once music ends
+					(-- state) ; next state will be the current one
+				else
+					(= cycles 1)
 				)
-				(= cycles 1)
-				; END OF BUGFIX (the same has been done in sMoveBuildings:changeState(6)).
+				; END OF BUGFIX (see also the other states of this script and
+				; sWhereToBud:changeState(3))
 			)
+			; TWEAK: New state, combine sDoTakeOffFlight+sMoveBuildings (2/2) and
+			; prevent the taxi driver's messages from being interrupted.
+			;
+			; The taxi drivers' talkers are modeless, and if the player makes a
+			; message be displayed by using the TALK/ASK/DO verbs on the taxi driver,
+			; it could be interrupted by gLb2Messager (in the case of Rocco) or by
+			; rm250:newRoom (in the case of Bob). Apart from the sudden interruption,
+			; if the message mode is SPEECH or BOTH this can also affect the game's
+			; music volume, in these modes the volume is lowered down when a message
+			; is displayed and restored when disposed. However, if the message is
+			; interrupted the volume won't be restored, which is problematic.
+			;
+			; We make a new state and deal with that by testing if the taxi drivers'
+			; talkers are initialized, if they are we set gLb2Messager's caller
+			; property to point to this script and reduce state by 1. This will make
+			; the script remain idle, and it'll be cued by the gLb2Messager whenever
+			; it's disposed. That'll let the message finish and then re-run this
+			; state without risk of interruptions.
+			;
+			; Lastly, we test who the driver with or new isBob local variable. If
+			; it's Rocco we directly change to state 11. If it's Bob we change to
+			; state 12 instead, imitating the change from state 6 to 7 of
+			; sMoveBuildings.
 			(10
+				(cond
+					(
+						(or
+							((ScriptID 1902 13) initialized?) ; Rocco's talker is initialized
+							((ScriptID 1903 14) initialized?) ; Bob's talker is initialized
+						)
+						(gLb2Messager caller: self) ; gLb2Messager will cue this script on dispose
+						(-- state) ; next state will be the current one
+					)
+					((not isBob) ; Rocco
+						(self changeState: 11)
+					)
+					(else ; Bob
+						(self changeState: 12)
+					)
+				)
+			)
+			; END OF TWEAK (see also the other states of this script and
+			; sWhereToBud:changeState(3))
+;;;			(10
+			(11 ; TWEAK: increase state by 1
 				(win1 setCycle: 0)
 				(win2 setCycle: 0)
 				(win3 setCycle: 0)
@@ -522,72 +671,74 @@
 				(gGameMusic2 send: 2 224 1000)
 				(gLb2Messager say: 10 0 16 0 self)
 			)
-			(11
-				(gGameMusic2 send: 2 224 500)
-				(= cycles 1)
-			)
+			; TWEAK: Disable no longer needed code.
+			;
+			; Some of the code in the original states 11 and 12 is redundant, and
+			; some other is no longer necessary after our changes to the other
+			; states.
+			;
+			; We only need to keep one state to re-enable the iconbar and change
+			; to the new room.
+;;;			(11
+;;;				(gGameMusic2 send: 2 224 500) ; unneded, rm250:newRoom stops it before it can be heard
+;;;				(= cycles 1)
+;;;			)
+;;;			(12
+;;;				(gGameMusic2 send: 2 224 0) ; unneded, and rm250:newRoom stops it before it can be heard
+;;;				(if (& global90 $0002) ((ScriptID 1902 13) dispose:)) unneeded, our changes to state 11 lets it properly dispose
+;;;				(gGame handsOn:) ; unneeded, not in handsOff
+;;;				(gIconBar enable: 5)
+;;;				(if (!= local0 gNumber) ; unneeded, local0 can't be the current room
+;;;					(global2 newRoom: local0)
+;;;				else
+;;;					(self dispose:) ; unneeded, the script will be disposed on room change
+;;;				)
 			(12
-				(gGameMusic2 send: 2 224 0)
-				(if (& global90 $0002) ((ScriptID 1902 13) dispose:))
-				(gGame handsOn:)
 				(gIconBar enable: 5)
-				(if (!= local0 gNumber)
-					(global2 newRoom: local0)
-				else
-					(self dispose:)
-				)
+				(global2 newRoom: local0)
 			)
+			; END OF TWEAK (see also the other states of this script and
+			; sWhereToBud:changeState(3))
 		)
 	)
 )
 
-(instance sMoveBuildings of Script
-	(properties)
-	
-	(method (changeState newState)
-		(switch (= state newState)
-			(0
-				(win1 setCycle: Fwd)
-				(win2 setCycle: Fwd)
-				(win3 setCycle: Fwd)
-				(win4 setCycle: Fwd)
-				(win5 setCycle: Fwd)
-				(= cycles 1)
-			)
-			(1
-				(gWrapSound number: 250 loop: 1 flags: 1 play:)
-				(gGame handsOn:)
-				(gIconBar disable: 5 6 0)
-				(= cycles 1)
-			)
-			(2
-				(gGameMusic2 send: 2 224 1000)
-				(= cycles 1)
-			)
-			(3
-				(gGameMusic2 send: 2 224 2000)
-				(= cycles 1)
-			)
-			(4
-				(gGameMusic2 send: 2 224 3000)
-				(= cycles 1)
-			)
-			(5
-				(gGameMusic2 send: 2 224 4000)
-				(= seconds (Random 6 10))
-			)
-			(6
-				; BUGFIX: Fix endless taxi driving + taxi drive prematurely ending.
-				;
-				; The tests to determine if music is playing and speech is ongoing are
-				; incorrect, see the bugfix in sDoTakeOffFlight:changeState(9) for more
-				; details, as the same applies here.
-				;
-				; We fix it by using Sound's handle property to detect if music isn't
-				; playing, we also add a check to determine if there's digital audio
-				; capability. The travel will last what Sierra intended, ending if music
-				; and sounds aren't playing. It won't mind if sounds are playing when
-				; there isn't digital audio support, preventing the endless drive bug.
+;;;(instance sMoveBuildings of Script ; unneeded, we've combined sDoTakeOffFlight and sMoveBuildings
+;;;	(properties)
+;;;	
+;;;	(method (changeState newState)
+;;;		(switch (= state newState)
+;;;			(0
+;;;				(win1 setCycle: Fwd)
+;;;				(win2 setCycle: Fwd)
+;;;				(win3 setCycle: Fwd)
+;;;				(win4 setCycle: Fwd)
+;;;				(win5 setCycle: Fwd)
+;;;				(= cycles 1)
+;;;			)
+;;;			(1
+;;;				(gWrapSound number: 250 loop: 1 flags: 1 play:)
+;;;				(gGame handsOn:)
+;;;				(gIconBar disable: 5 6 0)
+;;;				(= cycles 1)
+;;;			)
+;;;			(2
+;;;				(gGameMusic2 send: 2 224 1000)
+;;;				(= cycles 1)
+;;;			)
+;;;			(3
+;;;				(gGameMusic2 send: 2 224 2000)
+;;;				(= cycles 1)
+;;;			)
+;;;			(4
+;;;				(gGameMusic2 send: 2 224 3000)
+;;;				(= cycles 1)
+;;;			)
+;;;			(5
+;;;				(gGameMusic2 send: 2 224 4000)
+;;;				(= seconds (Random 6 10))
+;;;			)
+;;;			(6
 ;;;				(if
 ;;;					(not
 ;;;						(and
@@ -598,32 +749,20 @@
 ;;;					(-- state)
 ;;;				)
 ;;;				(= cycles 1)
-				(if
-					(or
-						(and
-							(DoSound sndGET_AUDIO_CAPABILITY) ; true if there's digital audio support
-							(!= (DoAudio audPOSITION) -1) ; true if digital sounds aren't playing
-						)
-						(gWrapSound handle?) ; true if music is playing
-					)
-					(-- state) ; reduce state by 1 to repeat the current one
-				)
-				(= cycles 1)
-				; END OF BUGFIX (the same has been done in sDoTakeOffFlight:changeState(9)).
-			)
-			(7
-				(gWrapSound fade:)
-				(gIconBar enable: 5)
-				(if (& global90 $0002) ((ScriptID 1903 14) dispose:))
-				(if (!= local0 gNumber)
-					(global2 newRoom: local0)
-				else
-					(self dispose:)
-				)
-			)
-		)
-	)
-)
+;;;			)
+;;;			(7
+;;;				(gWrapSound fade:)
+;;;				(gIconBar enable: 5)
+;;;				(if (& global90 $0002) ((ScriptID 1903 14) dispose:))
+;;;				(if (!= local0 gNumber)
+;;;					(global2 newRoom: local0)
+;;;				else
+;;;					(self dispose:)
+;;;				)
+;;;			)
+;;;		)
+;;;	)
+;;;)
 
 (instance laura of View
 	(properties
@@ -1085,7 +1224,8 @@
 	)
 	
 	(method (doVerb theVerb)
-		(if (gOldCast contains: trash1)
+;;;		(if (gOldCast contains: trash1)
+		(if isBob ; TWEAK: Use our new isBob local var
 			(= noun 7)
 		else
 			(= noun 8)
