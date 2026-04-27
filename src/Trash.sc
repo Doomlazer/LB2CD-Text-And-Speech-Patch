@@ -434,18 +434,30 @@
 				(= cycles 1)
 			)
 			(3
-				; TWEAK: Adapt sWhereToBud to work with the combined taxi drive script.
+				; BUGFIX+TWEAK: Don't let the player change the taxi destination when
+				; the travel is ongoing, adapt sWhereToBud to work with the combined
+				; taxi drive script.
 				;
-				; We've combined sDoTakeOffFlight+sMoveBuildings, so sDoTakeOffFlight
-				; can work for either Rocco or Bob after the press pass is used and a
-				; valid place to travel to is chosen.
+				; When the press pass is used on the taxi driver and New York is chosen
+				; as a destination, local2 is set. local2 is tested in the taxi drivers'
+				; doVerb method and allows using the ASK verb (now without press pass)
+				; to choose a new destination. local2 is never cleared, letting the
+				; player choose a new destination even when the travel is ongoing! This
+				; restarts sMoveBuildings/sDoTakeOffFlight each time a new valid
+				; destination is chosen (the script is set again as the room's script).
 				;
-				; We modify sWhereToBud to always set sDoTakeOffFlight for both taxi
-				; drivers, as sMoveBuildings is no longer needed.
+				; We fix this by clearing local2 when the travel starts, preventing
+				; the player from changing the destination from that point onwards.
+				;
+				; On a different note, we combined sDoTakeOffFlight+sMoveBuildings in
+				; a way that sDoTakeOffFlight can work for either Rocco or Bob after
+				; the press pass is used and a valid destination is chosen. We need to
+				; modify sWhereToBud to always set sDoTakeOffFlight for both taxi
+				; drivers, as sMoveBuildings doesn't exist anymore.
 ;;;				(cond
 ;;;					((or (== local0 gGNumber) (== local0 gNumber)) (gGame handsOn:) (= cycles 1))
-;;;					((not (gOldCast contains: trash1)) (global2 setScript: sDoTakeOffFlight)) ; Bob -> sDoTakeOffFlight
-;;;					(else (global2 setScript: sMoveBuildings)) ; Rocco -> sMoveBuildings
+;;;					((not (gOldCast contains: trash1)) (global2 setScript: sDoTakeOffFlight)) ; Rocco -> sDoTakeOffFlight
+;;;					(else (global2 setScript: sMoveBuildings)) ; Bob -> sMoveBuildings
 ;;;				)
 				(if
 					(or
@@ -455,9 +467,10 @@
 					(gGame handsOn:)
 					(= cycles 1)
 				else
+					(= local2 0) ; don't allow changing the destination anymore
 					(global2 setScript: sDoTakeOffFlight) ; Rocco/Bob -> sDoTakeOffFlight
 				)
-				; END OF TWEAK (see also sDoTakeOffFlight)
+				; END OF BUGFIX+TWEAK (see also sDoTakeOffFlight)
 			)
 			(4
 				(gIconBar enable: 5)
