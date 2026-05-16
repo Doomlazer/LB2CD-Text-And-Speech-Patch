@@ -23,19 +23,29 @@ While this project's main purpose is to patch text & speech support into LB2, fu
 * Patch 0.scr
   * Fixes issues with:
     * The hands-off cursor is often displayed when the player has control
-    * Music volume can get permanently lowered down by  clock chimes
+    * Music volume can get permanently lowered down by clock chimes
     * Showing the about screen has a fake memory limitation
   * Adds the following changes:
     * Remove base control panel restrictions
 * Patch 90.scr fixes an issue that made Yvette respond with the wrong message when asking her about Tut in acts 3+.
 * Patch 99.scr has changes to enable the previously unused Death Message speech.
 * Patch 110.scr fixes an issue that made the music abruptly change during the intro.
+* Patch 252.snd (car engine sound) nullifies some volume and pitch MIDI events from that sound, used for fixes in 240.scr and 250.scr.
 * Patch 230.scr (Tribune) fixes an issue that made the leftmost reporter answer as the one next to him, wrong voice included.
-* Patch 250.scr (Taxi)
-  * Fixes issues with:
-    * Endless taxi driving
+* Patch 240.scr (12th Street Docks), along with 252.snd, fix an issue that made the taxi's engine sound play with the wrong pitch.
+* Patch 250.scr and 250.hep (Taxi)
+  * Fix issues with:
     * Taxi drive prematurely ends
-    * Laura's messages pause the street animation during the taxi drive
+    * Endless taxi drive if the game couldn't initialize the digital audio card
+    * Endless taxi drive after looking at the laundry ticket while the travel is ongoing
+    * Choosing New York as a taxi destination allows changing the destination without using the press pass, even if the travel is ongoing
+    * Traveling in taxi from the museum to the docks makes the fountain sound mistakenly play when the taxi is hailed in the docks
+    * The car engine sound is never played in the taxi when entering from the museum
+    * Laura doesn't say anything if the laundry ticket is picked by clicking on its close-up
+    * The SAY verb can display a message too tall for the available space and cause a graphical glitch
+  * Adds the following changes:
+    * Make the street animation no longer pause while the laundry ticket's close-up is being shown
+    * Various code optimizations
 * Patch 310.scr (Speakeasy)
   * Adds the following changes:
     * Remove control panel restrictions of this room
