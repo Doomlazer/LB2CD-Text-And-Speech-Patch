@@ -543,7 +543,25 @@
 				(= cycles 1)
 			)
 			(4
-				(gGameMusic2 play:)
+				; TWEAK + BUGFIX: fix crash in debug mode when hailing the taxi and play
+				; the taxi's car engine sound using the correct pitch.
+				;
+				; gGameMusic2's number property is never set here, if debug mode is used
+				; to start the game in this room the game will crash when trying to play
+				; the non-existing sound resource 0.
+				;
+				; Additionally, when hailing the taxi in this room, the car engine sound
+				; is left playing with pitch 2000 (value set with midi events in 252.snd),
+				; but the other rooms leave it with pitch 0. This is inconsistent.
+				;
+				; We fix the crash in debug mode changing the gGameMusic2:play call so
+				; it explicitly sets the number property to 252. We patched 252.snd to
+				; remove its "hardcoded" fade-in and pitch, so we fade-in the sound
+				; ourselves with gGameMusic2:fade. The sound is now left playing with
+				; pitch 0, the pitch that's used when the taxi isn't moving.
+;;;				(gGameMusic2 play:)
+				(gGameMusic2 number: 252 flags: 1 loop: -1 play: 20 fade: 127 2 5 0) ; play sound 252 (car engine), in loop and with a quick fade-in
+				; END OF TWEAK + BUGFIX (see also sDoTakeOffFlight:changeState(0), in #250)
 				(taxi setMotion: MoveTo 281 154 self)
 			)
 			(5

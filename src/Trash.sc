@@ -490,24 +490,56 @@
 ;;;	(method (changeState newState &tmp [temp0 50])
 	(method (changeState newState) ; TWEAK: removed temp0, it's never used
 		(switch (= state newState)
-			; TWEAK: Optimize states 0 and 2 and remove unnecessary code.
-			;
-			; This script becomes the room's script once the player uses the press
-			; pass on the taxi driver and chooses a valid place to travel to.
-			;
-			; State 0 doesn't really need handsOff or setting canInput. The game is
-			; already in hands-off with input enabled when this script is set as the
-			; room script by sWhereToBud:changeState(3).
-			;
-			; We disable that code and move handsOn and the gIconBar:disable call
-			; from state 2 to state 0. The sooner this is done, the better, since
-			; it resets the mouse cursor and prevents the player from being able to
-			; use the press pass again while the taxi drive is ongoing.
 			(0
+				; TWEAK: Remove unnecessary code and bring code from state 2.
+				;
+				; This script becomes the room's script once the player uses the press
+				; pass on the taxi driver and chooses a valid place to travel to.
+				;
+				; State 0 doesn't really need handsOff or setting canInput. The game is
+				; already in hands-off with input enabled when this script is set as the
+				; room script by sWhereToBud:changeState(3).
+				;
+				; We disable that code and move handsOn and the gIconBar:disable call
+				; from state 2 to state 0. The sooner this is done, the better, since
+				; it resets the mouse cursor and prevents the player from being able to
+				; use the press pass again while the taxi drive is ongoing.
 ;;;				(gGame handsOff:)
 ;;;				(User canInput: 1)
 				(gGame handsOn:) ; moved here from state 2
 				(gIconBar disable: 5 6 0) ; moved here from state 2
+				; END OF TWEAK (see also the other states of this script and
+				; sWhereToBud:changeState(3))
+				;
+				; BUGFIX: Fix car engine sound not playing after entering the taxi from
+				; room 330 (museum).
+				;
+				; A car engine sound is started in loop when Laura hails the taxi in
+				; rooms 210, 240, 260, 280 or 300, and it continues playing in the taxi
+				; room until the travel finishes. The museum room (#330) has the taxi
+				; parked outside, Laura directly enters the taxi instead of hailing it
+				; and the engine sound is not started there. The sound is never started
+				; in the taxi room either, resulting in a silent taxi during the travel.
+				;
+				; This also makes room #240 (docks) play the wrong sound when the taxi
+				; is hailed there. sHailCab:changeState(4) in #240 calls gGameMusic:play
+				; without specifying resource number. It's expected to be 252 (car
+				; engine), but the museum room never sets it, it sets 333 instead
+				; (fountains sound effect). As a result, using the taxi to travel from
+				; the museum to the docks and hailing the taxi at the docks will play
+				; the fountain sound, and will remain in loop for the entire travel.
+				;
+				; We fix this issue by playing sound 252 when the previous room is 330,
+				; right before the street animation starts. We patched 252.snd as well,
+				; removing its fade-ins and altered pitches that were done with midi
+				; events, since those would sound off here. The script files where the
+				; engine sound is started already fade-in and alter the pitch by using
+				; gGameMusic2 calls, so it doesn't need to be part of the midi. The only
+				; exception is room 240 (docks), which we had to modify.
+				(if (== gGNumber 330) ; was the museum the previous room?
+					(gGameMusic2 number: 252 flags: 1 loop: -1 play: 0 fade: 127 2 32 0) ; play sound 252 (car engine), in loop and with a very quick fade-in
+				)
+				; END OF BUGFIX (see also rm240:sHailCab in #240)
 				(= cycles 1)
 			)
 			(1
@@ -520,12 +552,16 @@
 			)
 			(2
 				(gWrapSound number: 250 loop: 1 flags: 1 play:)
+				; TWEAK: Disable code that we've moved to state 0.
+				;
+				; We added the handsOn and gIconBar:disable calls to state 0, we don't
+				; need them here anymore. We disable them.
 ;;;				(gGame handsOn:)
 ;;;				(gIconBar disable: 5 6 0)
+				; END OF TWEAK (see also the other states of this script and
+				; sWhereToBud:changeState(3))
 				(= cycles 1)
 			)
-			; END OF TWEAK (see also the other states of this script and
-			; sWhereToBud:changeState(3))
 			(3
 				(gGameMusic2 send: 2 224 1000)
 				(= cycles 1)
