@@ -536,62 +536,84 @@
 	
 	(method (onMe param1)
 		(if (super onMe: param1)
+			; BUGFIX + TWEAK: Correct the areas of every head and make ego properly
+			; turn towards them.
+			;
+			; genericHead uses the "generic" black control color, and it's the
+			; instance used for the 27 the heads in the room. Its onMe method
+			; compares gX and gY with hardcoded areas to determine what head was
+			; clicked on and display different messages. These areas have a wrong
+			; value by 10 pixels on the y axis. This issue is just like the one we
+			; fixed and explained in genericArmor:onMe, in script #440. The current
+			; case is worse since the heads are really small.
+			;
+			; Also, since genericHead is just one instance, its x property is always
+			; the same regardless of the head the player clicks on. This makes Laura
+			; face towards x 0 y 5 even if the actual clicked head is far away from
+			; there.
+			;
+			; We move the heads' areas 10 pixels down on the y axis to make them
+			; accurate. We also make genericHead's x property dynamic, changing
+			; whenever the player clicks on the black control color. This way Laura
+			; will face towards every head in a more convincing manner.
+			(= x gX) ; dynamic x
 			(cond 
-				(
-				(and (<= 59 gX) (<= gX 74) (<= 68 gY) (<= gY 82)) (= noun 2))
-				(
-				(and (<= 39 gX) (<= gX 56) (<= 47 gY) (<= gY 65)) (= noun 9))
-				(
-				(and (<= 136 gX) (<= gX 147) (<= 87 gY) (<= gY 99)) (= noun 19))
-				(
-				(and (<= 152 gX) (<= gX 163) (<= 91 gY) (<= gY 101)) (= noun 20))
-				(
-				(and (<= 63 gX) (<= gX 80) (<= 108 gY) (<= gY 125)) (= noun 14))
-				(
-				(and (<= 276 gX) (<= gX 294) (<= 74 gY) (<= gY 91)) (= noun 31))
-				(
-				(and (<= 182 gX) (<= gX 195) (<= 112 gY) (<= gY 124)) (= noun 27))
-				(
-				(and (<= 146 gX) (<= gX 152) (<= 101 gY) (<= gY 113)) (= noun 3))
-				(
-				(and (<= 88 gX) (<= gX 102) (<= 107 gY) (<= gY 122)) (= noun 15))
-				(
-				(and (<= 133 gX) (<= gX 146) (<= 68 gY) (<= gY 84)) (= noun 4))
-				(
-				(and (<= 74 gX) (<= gX 91) (<= 61 gY) (<= gY 76)) (= noun 16))
-				(
-				(and (<= 139 gX) (<= gX 150) (<= 113 gY) (<= gY 125)) (= noun 10))
-				(
-				(and (<= 177 gX) (<= gX 184) (<= 85 gY) (<= gY 96)) (= noun 26))
-				(
-				(and (<= 243 gX) (<= gX 262) (<= 75 gY) (<= gY 93)) (= noun 30))
-				(
-				(and (<= 89 gX) (<= gX 101) (<= 53 gY) (<= gY 66)) (= noun 17))
-				(
-				(and (<= 165 gX) (<= gX 176) (<= 93 gY) (<= gY 103)) (= noun 23))
-				(
-				(and (<= 185 gX) (<= gX 195) (<= 89 gY) (<= gY 99)) (= noun 25))
-				(
-				(and (<= 279 gX) (<= gX 294) (<= 102 gY) (<= gY 119)) (= noun 24))
-				(
-				(and (<= 153 gX) (<= gX 163) (<= 104 gY) (<= gY 114)) (= noun 18))
-				(
-				(and (<= 312 gX) (<= gX 319) (<= 73 gY) (<= gY 88)) (= noun 29))
-				(
-				(and (<= 68 gX) (<= gX 88) (<= 88 gY) (<= gY 104)) (= noun 12))
-				(
-				(and (<= 245 gX) (<= gX 261) (<= 101 gY) (<= gY 117)) (= noun 28))
-				(
-				(and (<= 148 gX) (<= gX 156) (<= 78 gY) (<= gY 89)) (= noun 21))
-				(
-				(and (<= 159 gX) (<= gX 169) (<= 81 gY) (<= gY 93)) (= noun 22))
-				(
-				(and (<= 134 gX) (<= gX 145) (<= 99 gY) (<= gY 112)) (= noun 11))
-				(
-				(and (<= 313 gX) (<= gX 319) (<= 103 gY) (<= gY 118)) (= noun 33))
-				(
-				(and (<= 178 gX) (<= gX 188) (<= 97 gY) (<= gY 109)) (= noun 32))
+;;;				((and (<= 59 gX 74) (<= 68 gY 82)) (= noun 2))
+				((and (<= 59 gX 74) (<= 78 gY 92)) (= noun 2))
+;;;				((and (<= 39 gX 56) (<= 47 gY 65)) (= noun 9))
+				((and (<= 39 gX 56) (<= 57 gY 75)) (= noun 9))
+;;;				((and (<= 136 gX 147) (<= 87 gY 99)) (= noun 19))
+				((and (<= 136 gX 147) (<= 97 gY 109)) (= noun 19))
+;;;				((and (<= 152 gX 163) (<= 91 gY 101)) (= noun 20))
+				((and (<= 152 gX 163) (<= 101 gY 111)) (= noun 20))
+;;;				((and (<= 63 gX 80) (<= 108 gY 125)) (= noun 14))
+				((and (<= 63 gX 80) (<= 118 gY 135)) (= noun 14))
+;;;				((and (<= 276 gX 294) (<= 74 gY 91)) (= noun 31))
+				((and (<= 276 gX 294) (<= 84 gY 101)) (= noun 31))
+;;;				((and (<= 182 gX 195) (<= 112 gY 124)) (= noun 27))
+				((and (<= 182 gX 195) (<= 122 gY 134)) (= noun 27))
+;;;				((and (<= 146 gX 152) (<= 101 gY 113)) (= noun 3))
+				((and (<= 146 gX 152) (<= 111 gY 123)) (= noun 3))
+;;;				((and (<= 88 gX 102) (<= 107 gY 122)) (= noun 15))
+				((and (<= 88 gX 102) (<= 117 gY 132)) (= noun 15))
+;;;				((and (<= 133 gX 146) (<= 68 gY 84)) (= noun 4))
+				((and (<= 133 gX 146) (<= 78 gY 94)) (= noun 4))
+;;;				((and (<= 74 gX 91) (<= 61 gY 76)) (= noun 16))
+				((and (<= 74 gX 91) (<= 71 gY 86)) (= noun 16))
+;;;				((and (<= 139 gX 150) (<= 113 gY 125)) (= noun 10))
+				((and (<= 139 gX 150) (<= 123 gY 135)) (= noun 10))
+;;;				((and (<= 177 gX 184) (<= 85 gY 96)) (= noun 26))
+				((and (<= 177 gX 184) (<= 95 gY 106)) (= noun 26))
+;;;				((and (<= 243 gX 262) (<= 75 gY 93)) (= noun 30))
+				((and (<= 243 gX 262) (<= 85 gY 103)) (= noun 30))
+;;;				((and (<= 89 gX 101) (<= 53 gY 66)) (= noun 17))
+				((and (<= 89 gX 101) (<= 63 gY 76)) (= noun 17))
+;;;				((and (<= 165 gX 176) (<= 93 gY 103)) (= noun 23))
+				((and (<= 165 gX 176) (<= 103 gY 113)) (= noun 23))
+;;;				((and (<= 185 gX 195) (<= 89 gY 99)) (= noun 25))
+				((and (<= 185 gX 195) (<= 99 gY 109)) (= noun 25))
+;;;				((and (<= 279 gX 294) (<= 102 gY 119)) (= noun 24))
+				((and (<= 279 gX 294) (<= 112 gY 129)) (= noun 24))
+;;;				((and (<= 153 gX 163) (<= 104 gY 114)) (= noun 18))
+				((and (<= 153 gX 163) (<= 114 gY 124)) (= noun 18))
+;;;				((and (<= 312 gX 319) (<= 73 gY 88)) (= noun 29))
+				((and (<= 312 gX 319) (<= 83 gY 98)) (= noun 29))
+;;;				((and (<= 68 gX 88) (<= 88 gY 104)) (= noun 12))
+				((and (<= 68 gX 88) (<= 98 gY 114)) (= noun 12))
+;;;				((and (<= 245 gX 261) (<= 101 gY 117)) (= noun 28))
+				((and (<= 245 gX 261) (<= 111 gY 127)) (= noun 28))
+;;;				((and (<= 148 gX 156) (<= 78 gY 89)) (= noun 21))
+				((and (<= 148 gX 156) (<= 88 gY 99)) (= noun 21))
+;;;				((and (<= 159 gX 169) (<= 81 gY 93)) (= noun 22))
+				((and (<= 159 gX 169) (<= 91 gY 103)) (= noun 22))
+;;;				((and (<= 134 gX 145) (<= 99 gY 112)) (= noun 11))
+				((and (<= 134 gX 145) (<= 109 gY 122)) (= noun 11))
+;;;				((and (<= 313 gX 319) (<= 103 gY 118)) (= noun 33))
+				((and (<= 313 gX 319) (<= 113 gY 128)) (= noun 33))
+;;;				((and (<= 178 gX 188) (<= 97 gY 109)) (= noun 32))
+				((and (<= 178 gX 188) (<= 107 gY 119)) (= noun 32))
 			)
+			; END OF BUGFIX + TWEAK (see also genericArmor:onMe, in #440)
 		)
 	)
 )
