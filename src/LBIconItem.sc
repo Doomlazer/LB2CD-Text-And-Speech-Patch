@@ -305,7 +305,37 @@
 		(switch theVerb
 			(4
 				(gInv hide:)
-				(global2 setInset: (ScriptID 20 0))
+				; WORKAROUND: Prevent the notebook from clearing the palette effect of
+				; rooms 330/335 in Act 2.
+				;
+				; A palette effect is applied in rooms 330 and 335 during Act 2 to make
+				; them look darker, as the act takes place at night. Displaying Laura's
+				; notebook will clear the effect, unintendedly bringing "daylight" back.
+				; The culprit is the fading transition that the inNotebook inset (of
+				; script #20) uses when it appears/disappears:
+				; style $000a, which corresponds with dpOPEN_FADEPALETTE.
+				;
+				; Note that the player's only way to display Laura's notebook in Act 2
+				; while in rooms 330/335 is by using the DO verb on the notebook
+				; inventory icon. That makes the present script file a good candidate
+				; for adding a workaround to.
+				;
+				; We work around this issue by setting inNotebook's style property to
+				; a different transition if the current room is 330/335 and the act is
+				; 2 or later. This prevents the palette effect from being cleared. We're
+				; sticking to dpANIMATION_BLACKOUT with the dpOPEN_PIXELATION transition
+				; effect, since it looks closer to a fade than the other available
+				; transitions. The style property resets by itself once inNotebook is
+				; disposed and reinitialized, so we don't need to take care of that.
+				(if
+					(and
+						(proc999_5 gNumber 330 335) ; OneOf, is the current room 330 or 335?
+						(> global123 1) ; is it act 2 or later?
+					)
+					((ScriptID 20 0) style: (| dpANIMATION_BLACKOUT dpOPEN_PIXELATION)) ; inNotebook, change transition style
+				)
+				; END OF WORKAROUND
+				(global2 setInset: (ScriptID 20 0)) ; inNotebook, set inset
 				(return)
 			)
 			(else  (super doVerb: theVerb))
