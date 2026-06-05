@@ -96,22 +96,45 @@
 				(not (proc0_2 85))
 			)
 			(= local3 ((ScriptID 90 3) room?))
-			((ScriptID 90 3)
+			; BUGFIX: Make Heimlich and O'Riley face the correct direction in the
+			; Old Master's Room at the end of Act 3.
+			;
+			; As explained in sPartysOver:changeState(0) in script #355, Sierra
+			; removed the diagonal walking loops from the museum actors' views, but
+			; they didn't update the code accordingly in various places, resulting
+			; in actors facing the wrong direction because loop 8 doesn't exist.
+			;
+			; This specific case affects to Heimlich and O'Riley, when Laura enters
+			; the Old Master's Room right before the conclusion of Act 3. Heimlich
+			; and O'Riley are in the room facing the wrong direction.
+			;
+			; We fix it by using loop 4 instead of 8. Fix ported from:
+			; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11370
+			((ScriptID 90 3) ; aORiley
 				originalView: 818
 				view: 818
 				moveTo: gNumber
 				posn: 227 179
-				setLoop: 8
+;;;				setLoop: 8
+				setLoop: 4
 				setCel: 1
 			)
-			((ScriptID 32 0)
+			((ScriptID 32 0) ; aHeimlich
 				originalView: 814
 				room: gNumber
 				init:
 				posn: 206 179
-				setLoop: 8
+;;;				setLoop: 8
+				setLoop: 4
 				setCel: 0
 			)
+			; END OF BUGFIX (see also:
+			; - rm650:init, in #650
+			; - sEnterNorth:changeState(0), in this same script file
+			; - sEnterNorth:changeState(0), in #420
+			; - rm400:init and sHeimlichShoos:changeState(4), in #400
+			; - sPartysOver:changeState(0) and sPartysOver:changeState(15), in #355
+			; )
 			(WrapMusic pause:)
 			(gGameMusic2 number: 350 loop: -1 flags: 1 play:)
 		)
@@ -339,25 +362,25 @@
 	)
 )
 
-;;;(instance lauraSwingingRt of Actor ;;UNUSED
-;;;	(properties
-;;;		x 185
-;;;		y 187
-;;;		view 504
-;;;		loop 1
-;;;		cel 8
-;;;	)
-;;;)
+(instance lauraSwingingRt of Actor ; unused, kept to not need a heap patch
+	(properties
+		x 185
+		y 187
+		view 504
+		loop 1
+		cel 8
+	)
+)
 
-;;;(instance lauraSwingingLt of Actor ;;UNUSED
-;;;	(properties
-;;;		x 136
-;;;		y 185
-;;;		view 504
-;;;		loop 2
-;;;		cel 9
-;;;	)
-;;;)
+(instance lauraSwingingLt of Actor ; unused, kept to not need a heap patch
+	(properties
+		x 136
+		y 185
+		view 504
+		loop 2
+		cel 9
+	)
+)
 
 (instance bobPortrait of Feature
 	(properties
@@ -448,16 +471,16 @@
 	)
 )
 
-;;;(instance skeletonKey of Feature
-;;;	(properties
-;;;		x 270
-;;;		y 100
-;;;		noun 17
-;;;		sightAngle 40
-;;;		onMeCheck $0010
-;;;	)
-;;;	
-;;;	(method (doVerb theVerb)
+(instance skeletonKey of Feature ; unused, kept to not need a heap patch
+	(properties
+		x 270
+		y 100
+		noun 17
+		sightAngle 40
+		onMeCheck $0010
+	)
+
+	(method (doVerb theVerb)
 ;;;		(switch theVerb
 ;;;			(1
 ;;;				(global2 setScript: sBoschPainting)
@@ -467,8 +490,8 @@
 ;;;			)
 ;;;			(else  (super doVerb: theVerb))
 ;;;		)
-;;;	)
-;;;)
+	)
+)
 
 (instance erwinPortrait of Feature
 	(properties
@@ -1001,7 +1024,29 @@
 						room: gNumber
 						init:
 						posn: 130 180
-						setLoop: 8
+						; BUGFIX: Make Heimlich face the correct direction in the Old Master's
+						; Room during Act 2.
+						;
+						; As explained in sPartysOver:changeState(0) in script #355, Sierra
+						; removed the diagonal walking loops from the museum actors' views, but
+						; they didn't update the code accordingly in various places, resulting
+						; in actors facing the wrong direction because loop 8 doesn't exist.
+						;
+						; This specific case affects to Heimlich when Laura enters the Old
+						; Master's Room during Act 2, after the scene with Steve. Heimlich is
+						; there to kick her out, but he's facing the wrong direction.
+						;
+						; We fix it by using loop 4 instead of 8. Fix ported from:
+						; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11370
+;;;						setLoop: 8
+						setLoop: 4
+						; END OF BUGFIX (see also:
+						; - rm650:init, in #650
+						; - rm500:init, in this same script file
+						; - sEnterNorth:changeState(0), in #420
+						; - rm400:init and sHeimlichShoos:changeState(4), in #400
+						; - sPartysOver:changeState(0) and sPartysOver:changeState(15), in #355
+						; )
 						setCel: 3
 						noun: 1
 					)

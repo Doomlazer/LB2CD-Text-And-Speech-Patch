@@ -108,7 +108,29 @@
 			((ScriptID 32 0)
 				init:
 				view: 814
-				loop: 8
+				; BUGFIX: Make Heimlich face the correct direction in his office
+				; during Act 4.
+				;
+				; As explained in sPartysOver:changeState(0) in script #355, Sierra
+				; removed the diagonal walking loops from the museum actors' views, but
+				; they didn't update the code accordingly in various places, resulting
+				; in actors facing the wrong direction because loop 8 doesn't exist.
+				;
+				; This specific case affects to Heimlich. If the cheese is in the
+				; inventory during Act 4 and Laura enters Heimlich's Office, there's a
+				; 50% chance that he'll be inside. He'll be facing the wrong direction.
+				;
+				; We fix it by using loop 4 instead of 8. Fix ported from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11370
+				; BUGFIX NEW
+;;;				loop: 8
+				loop: 4
+				; END OF BUGFIX (see also:
+				; - rm500:init and sEnterNorth:changeState(0), in #500
+				; - sEnterNorth:changeState(0), in #420
+				; - rm400:init and sHeimlichShoos:changeState(4), in #400
+				; - sPartysOver:changeState(0) and sPartysOver:changeState(15), in #355
+				; )
 				cel: 2
 				actions: talkActions
 				room: 650

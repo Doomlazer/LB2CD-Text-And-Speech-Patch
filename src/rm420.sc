@@ -569,7 +569,28 @@
 						view: 814
 						room: gNumber
 						posn: 154 179
-						setLoop: 8
+						; BUGFIX: Make Heimlich face the correct direction in the Mastodon Room
+						; during Act 2.
+						;
+						; As explained in sPartysOver:changeState(0) in script #355, Sierra
+						; removed the diagonal walking loops from the museum actors' views, but
+						; they didn't update the code accordingly in various places, resulting
+						; in actors facing the wrong direction because loop 8 doesn't exist.
+						;
+						; This specific case affects to Heimlich when Laura enters the Mastodon
+						; Room during Act 2 before having seen the dagger. Heimlich is there,
+						; and talks to laura while facing the wrong direction.
+						;
+						; We fix it by using loop 4 instead of 8. Fix ported from:
+						; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11370
+;;;						setLoop: 8
+						setLoop: 4
+						; END OF BUGFIX (see also:
+						; - rm650:init, in #650
+						; - rm500:init and sEnterNorth:changeState(0), in #500
+						; - rm400:init and sHeimlichShoos:changeState(4), in #400
+						; - sPartysOver:changeState(0) and sPartysOver:changeState(15), in #355
+						; )
 						setCel: 6
 						noun: 1
 					)

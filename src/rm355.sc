@@ -56,7 +56,31 @@
 					moveTo: 355
 					originalView: 814
 					init:
-					setLoop: 8
+					; BUGFIX: Make Heimlich face the correct direction at the start of Act 3.
+					;
+					; The museum actors' views in the floppy version of the game contain 4
+					; loops for their diagonal walking animations. Those were removed from
+					; the CD version but the code wasn't updated accordingly in various
+					; room scripts. The non-updated code tries to set Loop 8 but doesn't
+					; exist in this CD version, and setting it falls back to a cel of the
+					; actor facing a wrong direction.
+					;
+					; This specific case affects to Heimlich's view during the scene at the
+					; start of act 3. He's standing in front of the table facing diagonally
+					; towards the top-left of the screen, but he should be facing the
+					; bottom of the screen instead.
+					;
+					; We fix it by setting loop 4 instead. Fix ported from:
+					; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L11370
+;;;					setLoop: 8
+					setLoop: 4
+					; END OF BUGFIX (see also:
+					; - this script's state 15
+					; - rm650:init, in #650
+					; - rm500:init and sEnterNorth:changeState(0), in #500
+					; - sEnterNorth:changeState(0), in #420
+					; - rm400:init and sHeimlichShoos:changeState(4), in #400
+					; )
 					setCel: 2
 					posn: 190 175
 					ignoreActors: 1
@@ -153,11 +177,41 @@
 			(15
 				(proc0_3 91)
 				(global2 setInset: 0)
-				((ScriptID 32 0)
-					posn: (- ((ScriptID 90 3) x?) 25) (- ((ScriptID 90 3) y?) 10)
-					setLoop: 8
-					setCel: 4
-				)
+				; TWEAK: Disable non-working code.
+				;
+				; The following code was supposed to reposition Heimlich's view and make
+				; him face towards O'Riley, but it never happens. There are two issues
+				; with it:
+				;
+				; 1) State 1 of this script calls aHeimlich:addToPic, making Heimlich's
+				; view be drawn as part of the background to save memory, but it can't
+				; be updated anymore by normal means. This results in the present code
+				; not doing any visible changes at all to Heimlich's view. This issue is
+				; present in both floppy and CD versions.
+				;
+				; 2) As explained in state 0 of this script, the CD version removed
+				; the diagonal walking loops of the museum actors, so using loop 8 here
+				; is an oversight, the loop doesn't exist. Even if we fixed issue 1,
+				; Heimlich would face a wrong direction (top-left). The correct loop
+				; to use would be 4.
+				;
+				; We disable this code. What's presumably the intended behavior looks
+				; off compared to how it looks without correcting the bug (it doesn't
+				; really look like he's facing O'Riley, Heimlich's idle bottom-right
+				; diagonal cel kind of looks like he's facing to the right, though this
+				; is subjective).
+;;;				((ScriptID 32 0)
+;;;					posn: (- ((ScriptID 90 3) x?) 25) (- ((ScriptID 90 3) y?) 10)
+;;;					setLoop: 8 ; wrong, the correct loop is 4
+;;;					setCel: 4
+;;;				)
+				; END OF TWEAK (see also:
+				; - this script's state 0
+				; - rm650:init, in #650
+				; - rm500:init and sEnterNorth:changeState(0), in #500
+				; - sEnterNorth:changeState(0), in #420
+				; - rm400:init and sHeimlichShoos:changeState(4), in #400
+				; )
 				((ScriptID 21 0) doit: 267)
 				((ScriptID 31 0) setMotion: PolyPath 350 185 self)
 				(gWrapSound fade:)
@@ -174,18 +228,18 @@
 	)
 )
 
-;;;(instance sIllegal of Script ;;UNUSED
-;;;	(properties)
-;;;	
-;;;	(method (doit)
+(instance sIllegal of Script ; unused, kept to not need a heap patch
+	(properties)
+	
+	(method (doit)
 ;;;		(if (< local0 100)
 ;;;			(Palette palSET_INTENSITY 0 255 (= local0 (+ local0 2)))
 ;;;			(if (== local0 100) (self cue:))
 ;;;		)
 ;;;		(super doit:)
-;;;	)
+	)
 ;;;	
-;;;	(method (changeState newState)
+	(method (changeState newState)
 ;;;		(switch (= state newState)
 ;;;			(0
 ;;;				(gGame handsOn:)
@@ -218,9 +272,9 @@
 ;;;				(global2 newRoom: 99)
 ;;;			)
 ;;;		)
-;;;	)
-;;;)
-;;;
+	)
+)
+
 (instance inErnie_Laura of Inset
 	(properties
 		picture 475
