@@ -273,8 +273,25 @@
 			(3
 				(nCreak number: 455 play:)
 				(lid1 show:)
+				; BUGFIX: Fix Laura's running view not being used during act 5 after
+				; opening the right coffin.
+				;
+				; Ego uses view 426 to show Laura running during most part of act 5.
+				; Using the DO verb on the right mummy coffin in the western side of the
+				; Egyptian Exhibit will display a short animation of Laura opening and
+				; closing its lid (view 454). Ego's view would need to be set back to
+				; view 426 when that animation finishes, but it's wrongly set to 831
+				; instead, which will show Laura walking instead of running until the
+				; player exits the room.
+				;
+				; We fix it by testing if the current act is act 5, if so we make it use
+				; view 426, otherwise we use 831.
 				(gEgo
-					normalize: 831 setScale: Scaler 131 30 190 21)
+;;;					normalize: 831 setScale: Scaler 131 30 190 21)
+					normalize: (if (== global123 5) 426 else 831)
+					setScale: Scaler 131 30 190 21
+				)
+				; END OF BUGFIX
 				(gGame handsOn:)
 ;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
 				(self dispose:)
