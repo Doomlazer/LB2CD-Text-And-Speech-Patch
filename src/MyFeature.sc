@@ -474,16 +474,35 @@
 					setCycle: CT 4 1 self
 				)
 			)
-			(2
-				(gGameMusic2 stop:)
-				(= cycles 2)
-			)
-			(3
+			; BUGFIX: Make music not stop when using the DO verb on various weapons
+			; in Heimlich's Office.
+			;
+			; Using the DO verb on various weapons in Heimlich's Office will set
+			; sShocked as the room script, Laura will be electrocuted and then music
+			; will stop. The music remains stopped until the player exits the room.
+			; This issue doesn't occur in the floppy version of the game, where the
+			; music isn't stopped at all.
+			;
+			; We fix it by disabling the second state of sShocked:changeState,
+			; responsible of stopping the music, then we decrease the state number
+			; of the following states by 1. This makes it behave like the floppy
+			; version.
+;;;			(2
+;;;				(gGameMusic2 stop:)
+;;;				(= cycles 2)
+;;;			)
+;;;			(3
+			(2 ; decrease state # by 1
 				(sFX number: 651 flags: 1 play:)
 				(gEgo setCycle: Osc 1 self)
 			)
-			(4 (sFX stop:) (= ticks 30))
-			(5
+;;;			(4
+			(3 ; decrease state # by 1
+				(sFX stop:)
+				(= ticks 30)
+			)
+;;;			(5
+			(4 ; decrease state # by 1
 				(gEgo
 					setLoop: 1
 					setCel: 0
@@ -491,13 +510,21 @@
 					setCycle: End self
 				)
 			)
-			(6 (= ticks 150))
-			(7 (gEgo setCycle: Beg self))
-			(8
+;;;			(6
+			(5 ; decrease state # by 1
+				(= ticks 150)
+			)
+;;;			(7
+			(6 ; decrease state # by 1
+				(gEgo setCycle: Beg self)
+			)
+;;;			(8
+			(7 ; decrease state # by 1
 				(gEgo normalize: 831 loop: 0)
 				(gGame handsOn:)
 				(self dispose:)
 			)
+			; END OF BUGFIX
 		)
 	)
 )
