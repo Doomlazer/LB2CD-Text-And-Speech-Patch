@@ -425,15 +425,53 @@
 				(gEgo setCycle: Beg self)
 				(nCreak number: 452 play:)
 			)
+			; BUGFIX: Make sound effect not interrupt the speech when Laura exits
+			; the left coffin during act 5.
+			;
+			; In Act 5, hiding in the leftmost coffin of the western Egyptian
+			; Exhibit when the Medieval Armory transom is open triggers a scene
+			; involving the murderer, displays a message and plays a digital sound
+			; effect. State 8 is in charge of displaying the message and play the
+			; sound effect, which occur simultaneously, this is a problem if the
+			; message mode is SPEECH/BOTH because the game can't play simultaneous
+			; digital audio. As a result, the sound effect interrupts the speech of
+			; the message.
+			;
+			; Note that if there isn't any digital audio capable sound card, a MIDI
+			; fallback of that sound will be played instead. This bug can't be
+			; reproduced on ScummVM, its engine allows the game to play simultaneous
+			; digital audio clips.
+			;
+			; We fix it by creating a new state 7 to isolate and play the sound
+			; effect, waiting 1 second if message mode is SPEECH or BOTH to let the
+			; sound finish before displaying the message in state 8. We add a test
+			; in state 6 to skip our new state if the transom is closed. Since
+			; pursuitTimer (ScriptID 94 1) is active when this script runs, our 1
+			; second wait in state 7 would be a disadvantage for the player, as
+			; pursuitTimer makes the murderer kill Laura once it expires. We add
+			; 1 to pursuitTimer's seconds property to offset the wait.
 			(6
 				(lid2 show:)
 				(gEgo normalize: 426 setScale: Scaler 131 30 190 21)
+				(if (not (proc0_2 39)) ; added test. Is the transom closed?
+					(++ state) ; state + 1, state 7 will be skipped
+				)
 				(= seconds 3)
 			)
-			(7
-				(if (proc0_2 39)
+			(7 ; added state
+				(gGameMusic2 number: 444 flags: 1 loop: 1 play:)
+				(if (== global90 1) ; is message mode TEXT?
+					(self changeState: 8) ; change to state 8 without waits
+				else
+					((ScriptID 94 1) seconds: (+ ((ScriptID 94 1) seconds?) 1)) ; add the extra second we'll use to pursuitTimer
+					(= seconds 1) ; wait 1 second to let the sound finish
+				)
+			)
+;;;			(7
+			(8 ; increase state # by 1
+				(if (proc0_2 39) ; is the transom open?
 					(gLb2Messager say: 16 0 0 0 self)
-					(gGameMusic2 number: 444 flags: 1 loop: 1 play:)
+;;;					(gGameMusic2 number: 444 flags: 1 loop: 1 play:) ; moved to state 7
 				else
 					(= cycles 1)
 				)
@@ -442,7 +480,9 @@
 					setMotion: MoveTo (gEgo x?) (+ (gEgo y?) 10) self
 				)
 			)
-			(8
+;;;			(8
+			(9 ; increase state # by 1
+			; END OF BUGFIX
 				(= global115 0)
 				(gGame handsOn:)
 ;;;				(gIconBar disable: 7) ; IMPROVEMENT: Remove control panel restriction
