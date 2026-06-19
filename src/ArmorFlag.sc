@@ -647,10 +647,21 @@
 	
 	(method (doVerb theVerb)
 		(switch theVerb
-			(4
+			(4 ; DO
 				(if (not local0)
 					(gLb2Messager say: 5 4)
-					(if (!= global90 2)
+					; TEXT&SPEECH CHANGE: Prevent doorknob sound from interrupting speech.
+					;
+					; Using the DO verb on the Medieval Armory door plays a sound effect
+					; unless the message mode is SPEECH, this was done to prevent the
+					; sound effect from interrupting speech. However, this logic causes the
+					; sound to trigger and interrupt speech in our new BOTH message mode.
+					;
+					; We fix it by narrowing the check so the sound effect only plays if the
+					; message mode is explicitly set to TEXT.
+;;;					(if (!= global90 2) ; message mode isn't SPEECH
+					(if (== global90 1) ; message mode is TEXT
+					; END OF TEXT&SPEECH CHANGE
 						(noise number: 48 loop: 1 flags: 1 play:)
 					)
 				else
