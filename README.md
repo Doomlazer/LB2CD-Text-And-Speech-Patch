@@ -27,6 +27,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Showing the about screen has a fake memory limitation
   * Adds the following changes:
     * Remove base control panel restrictions
+* Patch 15.scr fixes an issue that made opening Laura's notebook clear the "night palette effect" used in act 2.
 * Patch 90.scr fixes an issue that made Yvette respond with the wrong message when asking her about Tut in acts 3+.
 * Patch 99.scr has changes to enable the previously unused Death Message speech.
 * Patch 110.scr fixes an issue that made the music abruptly change during the intro.
@@ -89,12 +90,15 @@ While this project's main purpose is to patch text & speech support into LB2, fu
       * Crash/freeze due to stack overflow during the chase in act 5
       * Incorrect transom re-initialization
       * Out of sync transom's animation speed
+      * Interacting with the door plays a doorknob sound that interrupts speech in the BOTH message mode
 * Patch 454.scr (Egyptian Exhibit, west area)
   * Fixes issues with:
     * Softlock in act 5 when interacting with the lid of the left coffin if it was left open in the previous act
     * Glitchy animation when closing the left coffin
+    * Interacting with the right coffin during act 5 chase makes Laura temporarily stop using its running animation
   * Adds the following changes:
     * Remove control panel restrictions of this room
+* Patch 450.scr (Egyptian Exhibit, east area) fixes an issue that made the murderer no longer appear if the west or south exits are used at a specific moment during act 5 chase.
 * Patch 460.scr (Storage Room) fixes an issue that locked the game when trying to pass through the east door after swinging the crate.
 * Patch 480.scr (T-Rex Room)
   * Fixes issues with:
@@ -102,6 +106,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * The bone can be picked up from far away
     * The music can abruptly change right before the start of act 6
     * Using the north exit at the right moment during the chase in act 5 makes the murderer no longer appear
+* Patch 490.scr (Life Mask Room) fixes an issue that made the areas for the heads 10 pixels off on the y axis.
 * Patch 520.scr (Olympia's Office)
   * Fixes issues with:
     * Premature startup of act 5 when examining the countess in act 4
@@ -118,6 +123,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
 * Patch 561.scr (Carrington's Office, safe) has changes to improve the painting/safe bugfix of 560.scr.
 * Patch 600.scr (Museum Basement) fixes a softlock that occurred when the 'bugs with meat' appear while leaving the basement room.
 * Patch 610.scr (Alcohol Lab) has changes to remove the control panel restrictions of this room.
+* Patch 650.scr (Heimlich's Office) fixes an issue that made the music stop when interacting with some weapons.
 * Patch 700.scr (Mummy Storage)
   * Fixes issues with:
     * Graphical glitch after unlocking the left coffin
