@@ -157,10 +157,42 @@
 					next: (if (== global123 5) sDie else sLauraTutMeeting)
 				)
 			)
-			((global2 script?)
-				((global2 script?)
-					next: (if (== global123 5) sDie else sLauraTutMeeting)
+			((global2 script?) ; is there any script attached to the current room?
+				; BUGFIX: Prevent pursuitTimer from breaking if it expires during lRS or
+				; sEgoLeaveSouth.
+				;
+				; In act 5, if pursuitTimer expires while the player is leaving room 450
+				; (eastern Egyptian Exhibit) via the west or south exits, sDie will be
+				; queued to spawn the murderer right after the exit script finishes. But
+				; the room change will dispose the current room (and its script's queue)
+				; first, silently dropping sDie. As a result, the murderer won't appear.
+				;
+				; We fix it by detecting if we're mid-exit (west via lRS, south via
+				; sEgoLeaveSouth) when pursuitTimer expires, to re-initialize it with 2
+				; seconds and let it expire right after the room change instead, so the
+				; corresponding "death script" is safely attached to room 454/448.
+				; (lRS is matched by register==454, the target room number it stores
+				; in its register property. We can't directly reference it because lRS
+				; lives in script file #17 and isn't a public instance).
+;;;				((global2 script?)
+;;;					next: (if (== global123 5) sDie else sLauraTutMeeting)
+;;;				)
+				(cond
+					((!= global123 5) ; is current act not 5?
+						((global2 script?) next: sLauraTutMeeting) ; queue sLauraTutMeeting next
+					)
+					(
+						(or
+							(== ((global2 script?) register?) 454) ; is the register property of current room's script 454? (it's lRS)
+							(== (global2 script?) sEgoLeaveSouth) ; is current room's script sEgoLeaveSouth?
+						)
+						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; re-initialize pursuitTimer with 2 seconds
+					)
+					(else
+						((global2 script?) next: sDie) ; queue sDie next
+					)
 				)
+				; END OF BUGFIX
 			)
 			(else
 				(global2
