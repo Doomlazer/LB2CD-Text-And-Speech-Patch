@@ -152,11 +152,11 @@
 				; and pursuitTimer won't restart either.
 				;
 				; We fix it by testing if sExitNorth is ongoing, if it is we restart
-				; pursuitTimer with one second, so it expires in the next room ensuring
+				; pursuitTimer with 2 seconds, so it expires in the next room ensuring
 				; Laura's death.
 ;;;				((global2 script?) next: sCaughtYou)
 				(if (== (global2 script?) sExitNorth) ; is sExitNorth attached to the current room?
-						((ScriptID 94 1) setReal: (ScriptID 94 1) 1) ; start pursuitTimer again, 1 second
+						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
 				else
 					((global2 script?) next: sCaughtYou)
 				)
