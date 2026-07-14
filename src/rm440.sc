@@ -529,28 +529,56 @@
 				)
 			)
 			(3
-				(gGameMusic2 fade:)
-				(if (not (== global123 5)) (WrapMusic pause: 0))
-				(gGame handsOn: 1)
-				(southExitFeature init:)
-				; BUGFIX: Don't let sOutTapestry enable the inventory icon when there is none.
+				; BUGFIX:
+				; a) Fix cursor not changing to a down arrow when hovering over the south exit
+				; after the countess meeting (2/2)
+				; b) Don't let sOutTapestry enable the inventory icon when there is none
 				;
-				; sHideInTapestry disables the IconBar icons 1, 2, 6 and 5, and the appropiate
-				; cursors. sOutTapestry enables them back, "5" being the inventory item icon.
-				; If the player doesn't have any inventory item chosen (this can happen if
-				; they've recently used an item and it got removed from the inventory),
+				; a) Our fix in sCountessLeaves:changeState(4) in script #441 involves setting
+				; sOutTapestry:changeState(3) as the room's script via ScriptID to initialize
+				; southExitFeature. That is needed because southExitFeature is not a public
+				; instance, and we've chosen to not make it public to avoid adding overhead or
+				; require patching the heap. However, this script's state 3 does more things
+				; than what we strictly require whenever we call it from #441.
+				;
+				; We approach this by using this script's unused register property for a test
+				; that will let us bypass every instruction except the initialization of
+				; southExitFeature and the disposal of this script. We then set this script's
+				; register within sCountessLeaves:changeState(4) in #441.
+				;
+				; b) sHideInTapestry disables the IconBar icons 1, 2, 6 and 5, and the
+				; appropiate cursors. sOutTapestry enables them back, "5" being the inventory
+				; item icon. If the player doesn't have any inventory item chosen (this can
+				; happen if they've recently used an item and it got removed from the inventory),
 				; disabling it will do nothing, as it was already disabled, but sOutTapestry
 				; will enable the generic grey arrow cursor instead. The player will feel
 				; tempted to try out the cursor, but clicking while it's active will make the
-				; game crash instead. Moving to another room properly resets the cursors.
+				; game crash instead. Moving to another room will properly reset the cursor.
 				;
-				; We fix it by testing if there's any current inventory icon before enabling
+				; We fix this by testing if there's any current inventory icon before enabling
 				; the 5th icon.
+;;;				(gGameMusic2 fade:)
+;;;				(if (not (== global123 5)) (WrapMusic pause: 0))
+;;;				(gGame handsOn: 1)
+;;;				(southExitFeature init:)
 ;;;				(gIconBar enable: 1 2 6 5)
-				(gIconBar enable: 1 2 6)
-				(if (gIconBar curInvIcon?) (gIconBar enable: 5))
-				; END OF BUGFIX
+;;;				(self dispose:)
+				(if (not register) ; is register set?
+					(gGameMusic2 fade:)
+					(if (not (== global123 5))
+						(WrapMusic pause: 0)
+					)
+					(gGame handsOn: 1)
+					(gIconBar enable: 1 2 6) ; enable only icons 1, 2 and 6
+					(if (gIconBar curInvIcon?) ; is there an active inventory item?
+						(gIconBar enable: 5) ; enable icon 5
+					)
+				else
+					(= register 0) ; reset register
+				)
+				(southExitFeature init:)
 				(self dispose:)
+				; END OF BUGFIX (see also sCountessLeaves:changeState(4), in #441)
 			)
 		)
 	)

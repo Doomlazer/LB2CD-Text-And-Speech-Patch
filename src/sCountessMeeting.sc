@@ -148,41 +148,46 @@
 				((ScriptID 90 1) setMotion: PolyPath 239 134 self)
 			)
 			(4
-				(if (== (gEgo view?) 443)
+				(if (== (gEgo view?) 443) ; is Laura hiding in the tapestry? (view 443)
 					(gGame handsOn: 1)
 					(gUser canControl: 1)
 				else
 					(gGame handsOn:)
+					; BUGFIX: Fix cursor not changing to a down arrow when hovering over the
+					; south exit after the countess' meeting (1/2).
+					;
+					; In #440, southExitFeature makes the cursor change to a down arrow when
+					; hovering over the bottom part of the room. Hiding in the tapestry
+					; disposes the Feature making the cursor no longer change, and unhiding
+					; initializes it back again.
+					;
+					; sOutTapestry, also in #440, is the script that triggers the unhiding
+					; animation and initializes southExitFeature, but it behaves differently
+					; during the countess' meeting: in state 2 it attaches the sTalkWithCountess
+					; script to gEgo and disposes itself before having the chance to initialize
+					; southExitFeature in state 3. The issue is that southExitFeature isn't
+					; initialized when the meeting is over either, making the cursor no longer
+					; change to the down arrow one until re-entering the room. This problem only
+					; occurs when the player unhides before the countess leaves the room.
+					;
+					; Considering that southExitFeature is in #440 but isn't public and that
+					; sOutTapestry is also in #440 and is public, we've chosen to fix this by:
+					; - In script #440, we modify sOutTapestry:changeState(3) so it allows us to
+					; bypass every instruction except the initialization of southExitFeature when
+					; its register is set.
+					; - Here, we test if there are no exits active (gLb2Exits size is zero when
+					; it doesn't contain southExitFeature), if the test passes we attach
+					; sOutTapestry to the current room via ScriptID while setting its register to
+					; 1 and making it change to state 3 so it initializes southExitFeature.
+					(if (not (gLb2Exits size?)) ; is gLb2Exits empty? (southExitFeature isn't initialized)
+						(global2 setScript: ((ScriptID 440 1) register: 1 changeState: 3)) ; sOutTapestry, will initialize southExitFeature
+					)
+					; END OF BUGFIX (see also sOutTapestry:changeState(3), in #440)
 				)
 				((ScriptID 90 1) actions: 0 moveTo: 430 wandering: 1)
 				(countTimer dispose:)
 				(gGameMusic2 fade:)
 				(WrapMusic pause: 0)
-				; BUGFIX: Fix cursor not changing to a down arrow when hovering over the
-				; south exit after the countess' meeting.
-				;
-				; In #440, southExitFeature makes the cursor change to a down arrow when
-				; hovering over the bottom part of the room. Hiding in the tapestry
-				; disposes the Feature making the cursor no longer change, and unhiding
-				; from it initializes it back again.
-				;
-				; sOutTapestry, also in #440, is the script that triggers the unhiding
-				; animation and initializes southExitFeature, but it behaves differently
-				; during the countess' meeting. In state 2 it attaches the sTalkWithCountess
-				; script to gEgo and disposes itself before having the chance to initialize
-				; southExitFeature in state 3. That's the expected behavior, but the issue
-				; is that southExitFeature isn't initialized when the meeting is over
-				; either, making the cursor no longer change to the down arrow one anymore.
-				; This problem only occurs when the player unhides before the countess
-				; leaves the room, and things return to normal after re-entering the room.
-				;
-				; We fix it by testing if Laura isn't hidden behind the tapestry (view 443)
-				; when the countess leaves, if she isn't we attach sOutTapestry to the room,
-				; but only executing its third state to initialize southExitFeature.
-				(if (!= (gEgo view?) 443)
-					(global2 setScript: ((ScriptID 440 1) changeState: 3)) ; sOutTapestry
-				)
-				; END OF BUGFIX
 				(gIconBar enable: 7)
 				(self dispose:)
 				(DisposeScript 441)
