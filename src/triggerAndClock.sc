@@ -139,6 +139,19 @@
 (instance clockInset of Inset
 	(properties
 		view 22
+		; BUGFIX: Fix the chiming clock's visual priority.
+		;
+		; The view used by clockInset doesn't have enough visual priority and
+		; will appear behind some elements in various rooms, like the black
+		; frame of the Medieval Armory's corridor (#448) or a vertical tube in
+		; the Alcohol Lab (#610). The clock's hands (hourHand, quarterHand) are
+		; unaffected; both hands use a priority of 15 to be shown on top, but
+		; clockInset's priority isn't specified.
+		;
+		; We fix it by setting its priority property to 15 to match hourHand and
+		; quarterHand.
+		priority 15
+		; END OF BUGFIX
 	)
 	
 	(method (init)
