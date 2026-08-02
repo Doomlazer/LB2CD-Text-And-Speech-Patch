@@ -240,17 +240,16 @@
 					; expires while the ongoing script is sExitEast or sExitSouth, sHeKills will
 					; be queued right before changing rooms, consistently crashing the game.
 					;
-					; We fix it by modifying rm440:notify to test if sExitEast or sExitSouth are
-					; attached to the current room, if so we avoid queueing sHeKills next and
-					; start pursuitTimer again instead, but with a couple of seconds so it
-					; immediately expires in the next room.
+					; We fix it by modifying rm440:notify to only queue sHeKills next if
+					; sExitEast or sExitSouth aren't attached to the current room. Our bug fix
+					; in PursuitRgn:newRoom (in script #94) will take care of re-arming
+					; pursuitTimer with 1 cycle during the room change, to ensure that it
+					; properly expires right after the next room starts.
 ;;;					((global2 script?) next: (ScriptID 444 0))
-					(if (proc999_5 (global2 script?) sExitEast sExitSouth) ; OneOf, are sExitEast or sExitSouth attached to the current room?
-						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
-					else
+					(if (not (proc999_5 (global2 script?) sExitEast sExitSouth)) ; OneOf, are sExitEast and sExitSouth NOT attached to the current room?
 						((global2 script?) next: (ScriptID 444 0)) ; queue sHeKills next
 					)
-					; END OF BUGFIX
+					; END OF BUGFIX (see also PursuitRgn:newRoom, in #94)
 				else
 					(global2 setScript: (ScriptID 444 0))
 				)

@@ -161,28 +161,7 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				; BUGFIX: Prevent pursuitTimer from breaking if it expires during lRS.
-				;
-				; In act 5, if pursuitTimer expires while the player is leaving room 454
-				; (western Egyptian Exhibit) via the east exit, rm454:notify will be
-				; called, which will queue sDie to spawn the murderer right after the
-				; exit script (lRS) finishes. But the room change will dispose the
-				; current room (and its script's queue) first, silently dropping sDie.
-				; As a result, the timer will be disposed and the murderer won't appear.
-				;
-				; We fix it by detecting if we're mid-exit (lRS is ongoing) when
-				; pursuitTimer expires, to re-initialize it with 2 seconds and let it
-				; expire right after the room change instead, so sDie is safely attached
-				; to room 450. (lRS is matched by register==450, the target room number
-				; it stores in its register property. We can't directly reference it
-				; because lRS lives in script file #17 and isn't a public instance).
-;;;				((global2 script?) next: sDie)
-				(if (== ((global2 script?) register?) 450) ; is the register property of current room's script 450? (it's lRS)
-					((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
-				else
-					((global2 script?) next: sDie) ; queue sDie next
-				)
-				; END OF BUGFIX
+				((global2 script?) next: sDie)
 			else
 				(global2 setScript: sDie)
 			)

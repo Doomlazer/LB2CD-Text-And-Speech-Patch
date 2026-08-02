@@ -167,64 +167,38 @@
 	)
 	
 	(method (notify)
-		; BUGFIX: Prevent crash/freeze due to stack overflow during act 5 chase
-		; and prevent pursuitTimer from breaking if it expires during lRS.
-		;
-		; When pursuitTimer expires during act 5 chase rm448:notify is cued,
-		; which attaches sHeKills to this room, or queues it next if there's any
-		; script already attached to the room. This makes the murderer appear
-		; and kill Laura. rm448:notify doesn't test if sHeKills is already
-		; attached to the room, and that's problematic.
-		;
-		; If the player returns to rm448 through the north entrance without
-		; having opened the transom and without having hid in room 454's coffin,
-		; sEnterNorth will directly cue pursuitTimer so sHeKills is attached to
-		; the room, making the murderer immediately appear, but this doesn't
-		; stop pursuitTimer. If pursuitTimer now expires while sHeKills is
-		; ongoing, rm448:notify will queue sHeKills next, leaving it as both the
-		; current and the next script, causing infinite recursion when changing
-		; rooms. This will either crash or freeze the game.
-		;
-		; On another note, if pursuitTimer expires when the player is leaving
-		; the room by using the south exit and lRS (Leaving Room Script) is
-		; ongoing, sHeKills will be queued next to run right after lRS, but the
-		; current room (and its attached script's queue) will be disposed before
-		; that can happen, silently dropping sHeKills. As a result, pursuitTimer
-		; will be diposed and the murderer won't appear.
-		;
-		; We fix the crash/freeze by testing if sHeKills is not attached to this
-		; room before considering queueing sHeKills. That part of the fix is
-		; based on:
-		; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12035
-		; We fix the south exit's issue by detecting if we're mid-exit (lRS is
-		; ongoing) when pursuitTimer expires, to re-initialize it with 2 seconds
-		; and let it expire right after the room change instead, so the 'death
-		; script' is safely attached to room 440. (lRS is matched by
-		; register==440, the target room number it stores in its register
-		; property. We can't directly reference it because lRS lives in script
-		; file #17 and isn't a public instance).
-;;;		(if (== global123 5)
-;;;			(if (global2 script?)
+		(if (== global123 5)
+			(if (global2 script?)
+				; BUGFIX: Prevent crash/freeze due to stack overflow during act 5 chase.
+				;
+				; When pursuitTimer expires during act 5 chase rm448:notify is cued,
+				; which attaches sHeKills to this room, or queues it next if there's any
+				; script already attached to the room. This makes the murderer appear
+				; and kill Laura. rm448:notify doesn't test if sHeKills is already
+				; attached to the room, and that's problematic.
+				;
+				; If the player returns to rm448 through the north entrance without
+				; having opened the transom and without having hid in room 454's coffin,
+				; sEnterNorth will directly cue pursuitTimer so sHeKills is attached to
+				; the room, making the murderer immediately appear, but this doesn't
+				; stop pursuitTimer. If pursuitTimer now expires while sHeKills is
+				; ongoing, rm448:notify will queue sHeKills next, leaving it as both the
+				; current and the next script, causing infinite recursion when changing
+				; rooms. This will either crash or freeze the game.
+				;
+				; We fix it by testing if sHeKills is not attached to this room before
+				; queueing sHeKills next. Only if it isn't we queue it next. Fix ported
+				; from:
+				; https://github.com/scummvm/scummvm/blob/85702e06764f95a6b700e348dd90931613efdc29/engines/sci/engine/script_patches.cpp#L12035
 ;;;				((global2 script?) next: sHeKills)
-;;;			else
-;;;				(global2 setScript: sHeKills)
-;;;			)
-;;;		)
-		(cond
-			((!= global123 5)) ; is current act different to 5? do nothing
-			((not (global2 script?)) ; does the current room NOT have any script attached?
-				(global2 setScript: sHeKills) ; set sHeKills
-			)
-			; fix murderer no longer appearing
-			((== ((global2 script?) register?) 440) ; is the register property of current room's script 440? (it's lRS)
-				((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
-			)
-			; fix crash/freeze due to stack overflow
-			((!= (global2 script?) sHeKills) ; is current room's script NOT sHeKills?
-				((global2 script?) next: sHeKills) ; queue sHeKills next
+				(if (!= script sHeKills)
+					((global2 script?) next: sHeKills)
+				)
+				; END OF BUGFIX
+			else
+				(global2 setScript: sHeKills)
 			)
 		)
-		; END OF BUGFIX
 	)
 )
 

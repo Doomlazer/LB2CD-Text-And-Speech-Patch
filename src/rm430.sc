@@ -178,33 +178,20 @@
 	(method (notify)
 		(if (== global123 5)
 			(if (global2 script?)
-				; TWEAK+BUGFIX: Don't queue the sDie script if it's attached to rm430
-				; and prevent pursuitTimer from breaking if it expires during sExitWest.
+				; TWEAK: Don't queue the sDie script if it's already attached to rm430
 				;
-				; a) In our changes to sExitEast we forcefully call rm430:notify if the
+				; In our changes to sExitEast we forcefully call rm430:notify if the
 				; player attempts to use the east exit during act 5. We have to ensure
 				; that sDie isn't queued next if it's already attached to the current
 				; room. Not doing so would introduce issues.
 				;
-				; b) In act 5, if pursuitTimer expires when the player is using the west
-				; exit and sExitWest is ongoing, sDie will be queued next, but the queue
-				; will be gone when changing rooms. In that case sDie won't happen and
-				; the murderer will no longer appear.
-				;
-				; We approach a) by testing if the script attached to the current room
-				; isn't sDie, if it is we break the cond doing nothing. We fix b) by
-				; testing if sExitWest is attached to the current room when pursuitTimer
-				; expires, when it is we start pursuitTimer again, but with a couple of
-				; seconds so it expires in the next room.
+				; We approach this with a check to only queue sDie next when the room's
+				; script isn't sDie.
 ;;;				((global2 script?) next: sDie)
-				(cond
-					((== (global2 script?) sDie)) ; is sDie attached to the current room? break doing nothing
-					((== (global2 script?) sExitWest) ; is sExitWest attached to the current room?
-						((ScriptID 94 1) setReal: (ScriptID 94 1) 2) ; start pursuitTimer again, 2 seconds
-					)
-					(else ((global2 script?) next: sDie)) ; queue sDie so it's attached to the current room next
+				(if (!= (global2 script?) sDie) ; is the current room's script sDie?
+					((global2 script?) next: sDie) ; queue sDie next
 				)
-				; END OF TWEAK+BUGFIX (see also sExitEast:changeState)
+				; END OF TWEAK (see also sExitEast:changeState)
 			else
 				(global2 setScript: sDie)
 			)
