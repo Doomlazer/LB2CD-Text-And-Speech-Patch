@@ -158,9 +158,26 @@
 				)
 			)
 			((global2 script?)
+				; BUGFIX: Prevent stack overflow during act 5's chase.
+				;
+				; During the second half of act 5's chase (after exiting from the coffin
+				; at the western Egyptian Exhibit, #454), if the player reaches the
+				; Medieval Armory's northern corridor (#448) and tries to backtrack to
+				; the eastern Egyptian Exhibit (#450), rm450:init will forcefully call
+				; rm450:notify, which will in turn call sDie to make the murderer spawn
+				; and kill Laura. If pursuitTimer expires while sDie is ongoing, it'll
+				; queue sDie next to run right after sDie finishes, resulting
+				; in a crash/freeze due to stack overflow.
+				;
+				; We fix it by adding a test to only queue sDie next if sDie isn't
+				; already rm450's script.
+;;;				((global2 script?)
+;;;					next: (if (== global123 5) sDie else sLauraTutMeeting)
+;;;				)
 				((global2 script?)
-					next: (if (== global123 5) sDie else sLauraTutMeeting)
+					next: (if (== global123 5) (if (!= script sDie) sDie) else sLauraTutMeeting)
 				)
+				; END OF BUGFIX
 			)
 			(else
 				(global2
