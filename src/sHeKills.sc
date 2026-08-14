@@ -184,13 +184,42 @@
 )
 ; END OF TWEAK (see also sHeKills and sSmashedDoorOpen)
 
+; TWEAK + BUGFIX:
+; a) Make the wood shavings remain on the floor after their first animation
+; b) Prevent rm440Door from reverting hands-off
+;
+; a) During act 5 chase, if pursuitTimer expires in the Medieval Armory (#440)
+; while the door is locked, sHeKills will be called, which in turn will call
+; sSmashedDoorOpen to make the murderer bang the door, and wood shavings will be
+; animated 3 times. The shavings fall on the floor, but they'll disappear to
+; fall again on it every time the animation is played. The third time they're
+; animated, they finally remain on the floor (as part of the Pic, by using
+; addToPic).
+;
+; We improve this by creating a clone of the shavings instance right after the
+; first animation finishes. We make the clone display its last cel and call its
+; addToPic method to make it part of the Pic, so a visual copy stays on the
+; floor as part of the background image even if the the animation plays again.
+; We also change shavings' x and y coordinates earlier in the script (from state
+; 3 to 0) to make shavings have the same position the three times the loop plays.
+; Lastly, we replace the existing shavings:addToPic with shavings:dispose, as we
+; already made the clone part of the Pic.
+;
+; b) As explained in the bug fix of sHeKills, rm440Door:open reverts the
+; hands-off set at the start of sHeKills for an instant. sSmashedDoorOpen has a
+; rm440Door:open call in its fifth state that needs the same fix.
+;
+; We fix it by setting rm440Door's exitType property to 3 in the
+; rm440Door:open call in state 5, this is an invalid exitType value that will
+; make Door:cue bypass handsOn(1) after it opens.
 (instance sSmashedDoorOpen of Script
 	(properties)
 	
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
-				(shavings init: setLoop: 7)
+;;;				(shavings init: setLoop: 7)
+				(shavings posn: (- (shavings x?) 2) (- (shavings y?) 1) init:) ; keep shavings with the same coordinates from the start (moved here from state 3)
 				(= cycles 1)
 			)
 			(1
@@ -198,12 +227,13 @@
 				(shavings setCycle: End self)
 			)
 			(2
+				((Clone shavings) cel: 9 addToPic:) ; clone of shavings in its last cel and make it part of the Pic
 				(gLb2Messager say: 37 0 5 0 self)
 			)
 			(3
 				(shavings
 					cel: 0
-					posn: (- (shavings x?) 2) (- (shavings y?) 1)
+;;;					posn: (- (shavings x?) 2) (- (shavings y?) 1) ; moved to state 0
 				)
 				(= cycles 1)
 			)
@@ -214,33 +244,19 @@
 			(5
 				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:)
 				(shavings setCycle: End self)
-				; BUGFIX: Prevent rm440Door from reverting hands-off.
-				;
-				; The rm440Door:open calls in this script's fifth state and sHeKills 1st state
-				; (now state 2) will revert hands-off, as Door:cue (in #954) calls
-				; handsOn(1) after it opens or closes, which gives control back to the player.
-				; Sierra worked around this by calling handsOff again at the start of
-				; sKillFromSouth and sKillFromEast (though it's unnecessary in sKillFromSouth),
-				; but the hands-off is still reverted during an instant before sKillFromEast is
-				; called.
-				;
-				; We fix it by setting rm440Door's exitType property to 3 in the
-				; rm440Door:open call, this is an invalid exitType value that will make
-				; Door:cue bypass handsOn(1) after it opens. We do the same to the call in
-				; sHeKills:changeState(2) (formerly state 1). Lastly, we revert the no longer
-				; necessary handsOff calls in sKillFromEast and sKillFromSouth.
 ;;;				((ScriptID 440 2) locked: 0 open:)
 				((ScriptID 440 2) locked: 0 exitType: 3 open:) ; rm440Door. exitType: 3 will make Door:cue skip handsOn(1)
-				; END OF BUGFIX (see also sKillFromSouth, sKillFromEast and sHeKills)
 				((ScriptID 440 4) setCycle: Beg)
 			)
 			(6
-				(shavings addToPic:)
+;;;				(shavings addToPic:)
+				(shavings dispose:) ; dispose shavings, we no longer need to add it to the Pic here
 				(self dispose:)
 			)
 		)
 	)
 )
+; END OF TWEAK + BUGFIX (see also sHeKills, sKillFromSouth and sKillFromEast)
 
 (instance oriley of Actor
 	(properties
