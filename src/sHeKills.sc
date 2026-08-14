@@ -184,73 +184,97 @@
 )
 ; END OF TWEAK (see also sHeKills and sSmashedDoorOpen)
 
-; TWEAK + BUGFIX:
-; a) Make the wood shavings remain on the floor after their first animation
-; b) Prevent rm440Door from reverting hands-off
-;
-; a) During act 5 chase, if pursuitTimer expires in the Medieval Armory (#440)
-; while the door is locked, sHeKills will be called, which in turn will call
-; sSmashedDoorOpen to make the murderer bang the door, and wood shavings will be
-; animated 3 times. The shavings fall on the floor, but they'll disappear to
-; fall again on it every time the animation is played. The third time they're
-; animated, they finally remain on the floor (as part of the Pic, by using
-; addToPic).
-;
-; We improve this by creating a clone of the shavings instance right after the
-; first animation finishes. We make the clone display its last cel and call its
-; addToPic method to make it part of the Pic, so a visual copy stays on the
-; floor as part of the background image even if the the animation plays again.
-; We also change shavings' x and y coordinates earlier in the script (from state
-; 3 to 0) to make shavings have the same position the three times the loop plays.
-; Lastly, we replace the existing shavings:addToPic with shavings:dispose, as we
-; already made the clone part of the Pic.
-;
-; b) As explained in the bug fix of sHeKills, rm440Door:open reverts the
-; hands-off set at the start of sHeKills for an instant. sSmashedDoorOpen has a
-; rm440Door:open call in its fifth state that needs the same fix.
-;
-; We fix it by setting rm440Door's exitType property to 3 in the
-; rm440Door:open call in state 5, this is an invalid exitType value that will
-; make Door:cue bypass handsOn(1) after it opens.
 (instance sSmashedDoorOpen of Script
 	(properties)
 	
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
+				; TWEAK: Make the wood shavings remain on the floor after their first animation (1/2)
+				;
+				; During act 5 chase, if pursuitTimer expires in the Medieval Armory (#440)
+				; while the door is locked, sHeKills will be called, which in turn will call
+				; sSmashedDoorOpen to make the murderer bang the door, and wood shavings will be
+				; animated 3 times. The shavings fall on the floor, but they'll disappear to
+				; fall again on it every time the animation is played. The third time they're
+				; animated, they finally remain on the floor (as part of the Pic, by using
+				; addToPic).
+				;
+				; We improve this by creating a clone of the shavings instance right after the
+				; first animation finishes. We make the clone display its last cel and call its
+				; addToPic method to make it part of the Pic, so a visual copy remains on the
+				; floor as part of the background image even if the animation plays again. We
+				; also change shavings' x and y coordinates earlier in the script (from state 3
+				; to 0) to make it have the same position the three times the loop plays. Lastly,
+				; we replace the existing shavings:addToPic with shavings:dispose in state 6, as
+				; we already made the clone part of the Pic.
 ;;;				(shavings init: setLoop: 7)
 				(shavings posn: (- (shavings x?) 2) (- (shavings y?) 1) init:) ; keep shavings with the same coordinates from the start (moved here from state 3)
 				(= cycles 1)
 			)
 			(1
-				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:)
+				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:) ; noise (door banging sound)
 				(shavings setCycle: End self)
 			)
 			(2
-				((Clone shavings) cel: 9 addToPic:) ; clone of shavings in its last cel and make it part of the Pic
+				((Clone shavings) cel: 9 addToPic:) ; added. Clone shavings, set its last cel and make it part of the Pic
 				(gLb2Messager say: 37 0 5 0 self)
 			)
 			(3
 				(shavings
 					cel: 0
-;;;					posn: (- (shavings x?) 2) (- (shavings y?) 1) ; moved to state 0
+;;;					posn: (- (shavings x?) 2) (- (shavings y?) 1) ; disabled to move it to state 0
 				)
+				; END OF TWEAK (continued in this script's state 6)
 				(= cycles 1)
 			)
 			(4
-				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:)
+				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:) ; noise (door banging sound)
 				(shavings setCycle: End self)
 			)
 			(5
-				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:)
+				; TWEAK + BUGFIX:
+				; a) Let the door banging sound interrupt the door opening sound instead of the
+				; other way around.
+				; b) Prevent rm440Door from reverting hands-off
+				;
+				; a) This script calls noise:play three times to play a door banging sound, but
+				; the third time it should play it's instead interrupted by the door opening
+				; sound played by rm440Door:open, as the game can't play multiple simultaneous
+				; digital sounds. As mentioned in the fix started in state 0 of this script, the
+				; sounds are accompanied by animations of wood shavings to represent impacts on
+				; the door. The interruption of this sound the third time it should play (here
+				; in state 5) ruins the intended effect.
+				;
+				; We improve this by moving noise:play after the rm440Door:open call in state 5,
+				; which makes the door banging sound interrupt the door opening sound, instead
+				; of the other way around.
+				;
+				; b) As explained in the bug fix of sHeKills, rm440Door:open reverts the
+				; hands-off set at the start of sHeKills for an instant. sSmashedDoorOpen has a
+				; rm440Door:open call in its fifth state that needs the same fix.
+				;
+				; We fix it by setting rm440Door's exitType property to 3 in the
+				; rm440Door:open call in state 5, this is an invalid exitType value that will
+				; make Door:cue bypass handsOn(1) after it opens.
+;;;				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:) ; noise (door banging sound), disabled to move it after rm440Door:open
 				(shavings setCycle: End self)
 ;;;				((ScriptID 440 2) locked: 0 open:)
 				((ScriptID 440 2) locked: 0 exitType: 3 open:) ; rm440Door. exitType: 3 will make Door:cue skip handsOn(1)
+				((ScriptID 440 3) number: 444 loop: 1 flags: 1 play:) ; noise (door banging sound), moved here to interrupt the sound of rm440Door:open
 				((ScriptID 440 4) setCycle: Beg)
+				; END OF TWEAK + BUGFIX (see also this script's state 0, sHeKills, sKillFromSouth
+				; and sKillFromEast)
 			)
 			(6
+				; TWEAK: Make the wood shavings remain on the floor after their first animation (2/2)
+				;
+				; To continue with the fix described in state 0, we replace shavings:addTopic with
+				; shavings:dispose here, as we already made a clone of shavings and called its
+				; addToPic method in state 2.
 ;;;				(shavings addToPic:)
 				(shavings dispose:) ; dispose shavings, we no longer need to add it to the Pic here
+				; END OF TWEAK (continued in this script's state 0)
 				(self dispose:)
 			)
 		)
