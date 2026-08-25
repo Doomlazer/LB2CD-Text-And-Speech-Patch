@@ -150,42 +150,78 @@
 		(super newRoom: newRoomNumber)
 	)
 	
-	(method (notify)
-		(cond 
-			((gEgo script?)
-				((gEgo script?)
-					next: (if (== global123 5) sDie else sLauraTutMeeting)
-				)
-			)
-			((global2 script?)
-				; BUGFIX: Prevent stack overflow during act 5's chase.
-				;
-				; During the second half of act 5's chase (after exiting from the coffin
-				; at the western Egyptian Exhibit, #454), if the player reaches the
-				; Medieval Armory's northern corridor (#448) and tries to backtrack to
-				; the eastern Egyptian Exhibit (#450), rm450:init will forcefully call
-				; rm450:notify, which will in turn call sDie to make the murderer spawn
-				; and kill Laura. If pursuitTimer expires while sDie is ongoing, it'll
-				; queue sDie next to run right after sDie finishes, resulting
-				; in a crash/freeze due to stack overflow.
-				;
-				; We fix it by adding a test to only queue sDie next if sDie isn't
-				; already rm450's script.
+	; TWEAK + BUGFIX:
+	; a) Remove unnecessary code
+	; b) Make Tut's meeting only trigger at 10:15 pm
+	; c) Prevent stack overflow during act 5's chase
+	;
+	; a) rm450:notify tests if gEgo has any script attached. That test never
+	; passes, this script file doesn't attach any script to gEgo and there
+	; aren't any other script files that could attach a script to gEgo while
+	; this room is initialized.
+	;
+	; We remove the unnecessary code.
+	;
+	; b) meetingTimer will call rm450:notify if it expiress in this room.
+	; rm450:notify will then set sLauraTutMeeting as the room's script,
+	; triggering the meeting with Tut. This meeting should only occur during
+	; act 3 at 10:15 pm, but there aren't tests to restrict the time. As a
+	; result, Tut's meeting can be triggered at 10:15 pm, 1:00 am, 2:00 am or
+	; 3:00 am.
+	;
+	; We fix this by testing if 10:15 pm has not occurred and only let Tut's
+	; meeting happen if it hasn't.
+	;
+	; c) During the second half of act 5's chase (after exiting from the
+	; coffin at the western Egyptian Exhibit, #454), if the player reaches
+	; the Medieval Armory's northern corridor (#448) and backtracks to this
+	; room (#450), rm450:init will forcefully call rm450:notify, which in
+	; turn will call sDie to make the murderer spawn and kill Laura. If
+	; pursuitTimer expires while sDie is ongoing, it'll queue sDie next so
+	; it's run again after sDie finishes, resulting in a recursive loop and a
+	; crash/freeze due to stack overflow.
+	;
+	; We fix it by adding a test to only queue sDie next if it isn't already
+	; rm450's script.
+;;;	(method (notify)
+;;;		(cond
+;;;			((gEgo script?)
+;;;				((gEgo script?)
+;;;					next: (if (== global123 5) sDie else sLauraTutMeeting)
+;;;				)
+;;;			)
+;;;			((global2 script?)
 ;;;				((global2 script?)
 ;;;					next: (if (== global123 5) sDie else sLauraTutMeeting)
 ;;;				)
-				((global2 script?)
-					next: (if (== global123 5) (if (!= script sDie) sDie) else sLauraTutMeeting)
+;;;			)
+;;;			(else
+;;;				(global2
+;;;					setScript: (if (== global123 5) sDie else sLauraTutMeeting)
+;;;				)
+;;;			)
+;;;		)
+;;;	)
+	(method (notify)
+		(if (== global123 5) ; is it act 5?
+			(if script ; does the current room have any script attached?
+				(if (!= script sDie) ; is sDie the current room's script?
+					((global2 script?) next: sDie) ; queue sDie next
 				)
-				; END OF BUGFIX
+			else
+				(global2 setScript: sDie) ; set sDie
 			)
-			(else
-				(global2
-					setScript: (if (== global123 5) sDie else sLauraTutMeeting)
+		else
+			(if (not (proc0_10 $A101)) ; has 10:15 pm not occurred?
+				(if script ; does the current room have any script attached?
+					((global2 script?) next: sLauraTutMeeting) ; queue sLauraTutMeeting next
+				else
+					(global2 setScript: sLauraTutMeeting) ; set sLauraTutMeeting
 				)
 			)
 		)
 	)
+	; END OF TWEAK + BUGFIX
 )
 
 (instance sComeOnIn of Script
