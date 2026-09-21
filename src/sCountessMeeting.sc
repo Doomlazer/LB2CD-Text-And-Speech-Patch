@@ -88,7 +88,60 @@
 	
 	(method (changeState newState)
 		(switch (= state newState)
-			(0
+			; BUGFIX:
+			; a) Prevent hands-off from being reverted during the countess' meeting
+			; b) Prevent the countess' from passing through the door during the meeting
+			; c) Fix crash when closing the door right after the countess' meeting
+			;
+			; a) During act 3, if rm440's door (rm440Door) is closed when the countess'
+			; meeting starts, the door will be opened and hands-off will be reverted right
+			; after it opens, giving control back to the player. This happens because
+			; rm440Door:cue (inherited from Door, in #954) calls handsOn(1) when its
+			; exitType property is set to 2 (the default value).
+			;
+			; We fix this by adding a new state (0) to check if the door isn't open, in that
+			; case we set rm440Door's exitType property to 3, this is an invalid value that
+			; will make rm440Door:cue bypass handsOn(1) when it's opened. We then add code
+			; to this script's last state to set its value back to 2.
+			;
+			; b) During act 3, if rm440's door (rm440Door) is being closed when the
+			; countess' meeting starts, the countess will pass through the closed door. This
+			; happens because when when sCountessEnters checks if the door is closed (in
+			; state 1) to open it, it still isn't, and the script will continue without
+			; opening the door, which will be already closed when the countess enters.
+			;
+			; We fix it by adding a new state (1) to check if the door has a cycler attached
+			; (is opening/closing), if so we reduce sCountessEnters' state property by 1 to
+			; make the next state be again the current one. This loop will keep going on
+			; until the door is fully open/closed, so the test in the next state that checks
+			; if the door is closed will now be reliable.
+			;
+			; c) During act 3, if rm440's door is closed when the countess' meeting starts
+			; and the player tries to close the door right after the meeting ends, the game
+			; will crash. This happens because when the door is opened in state 1, they also
+			; set rm440Door's caller property to self, so sCountessEnters is cued after the
+			; door opens to make this script move to its next state. When the meeting ends,
+			; sCountessEnters is disposed but rm440Door's caller property still references
+			; it, making the game crash the moment the door opens and rm440Door:cue attempts
+			; to call a no longer existant sCountessEnters. This issue can't be reproduced
+			; on ScummVM.
+			;
+			; We fix it by setting rm440Door's caller method to 0 in this script's last
+			; state.
+			(0 ; added state
+				(if (!= ((ScriptID 440 2) doorState?) 2) ; is rm440Door not open?
+					((ScriptID 440 2) exitType: 3) ; rm440Door. Set its exitType property to 3 so Door:cue bypasses handsOn(1)
+				)
+				(= cycles 1)
+			)
+			(1 ; added state
+				(if ((ScriptID 440 2) cycler?) ; is rm440Door cycling (opening/closing)?
+					(-- state) ; reduce state by 1. The current state will be the next state (repeat)
+				)
+				(= cycles 1)
+			)
+;;;			(0
+			(2 ; increased state # by 2
 				((ScriptID 90 1)
 					moveTo: 440
 					loop: 1
@@ -101,7 +154,8 @@
 				)
 				(= cycles 1)
 			)
-			(1
+;;;			(1
+			(3 ; increased state # by 2
 				((ScriptID 90 1) view: 825)
 				(if (== ((ScriptID 440 2) doorState?) 0)
 					((ScriptID 440 2) caller: self open:)
@@ -109,12 +163,29 @@
 					(= cycles 2)
 				)
 			)
-			(2
+;;;			(2
+			(4 ; increased state # by 2
 				((ScriptID 90 1) setMotion: PolyPath 122 154 self)
 				(= ticks 480)
 			)
-;;;			(3 (gIconBar disable: 7)) ; IMPROVEMENT: Remove control panel restriction
-			(4 (self dispose:))
+			; IMPROVEMENT: Remove control panel restriction
+			;
+			; sCountessEnters:changeState(3) explicitly disables the control panel icon,
+			; preventing the player from accessing the options menu. This is a limitation
+			; that isn't present in the floppy version of the game.
+			;
+			; We disable the state to let the player access the control panel, matching the
+			; floppy version's behavior.
+;;;			(3 (gIconBar disable: 7))
+			; END OF IMPROVEMENT
+;;;			(4
+			(6 ; increased state # by 2
+				(if (== ((ScriptID 440 2) exitType?) 3) ; added check. Has rm440Door its exitType property set to 3?
+					((ScriptID 440 2) caller: 0 exitType: 2) ; reset rm440Door's exitType and caller properties (defaults defined in LbDoor, script file #16)
+				)
+				(self dispose:)
+			)
+			; END OF BUGFIX
 		)
 	)
 )
