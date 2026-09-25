@@ -90,6 +90,27 @@
 				approachVerbs: (if (== global123 5) 0 else 4 1 8)
 			)
 		)
+		; BUGFIX: Fix Medieval Armory's door not re-initializing locked.
+		;
+		; In Act 5, the player can bolt the Medieval Armory door. Upon
+		; re-entering, the door (rm440Door) and bolt display their correct cels
+		; (0 and 3), but interacting with them triggers incorrect behavior: the
+		; door closes instead of stating it's locked, and the bolt re-bolts
+		; itself. This happens because rm440Door has its forceOpen property set
+		; to 1 by default, and its locked property is never set before or during
+		; its initialization. Flag 41 is used when the door is bolted and it's
+		; tested during the room's initialization, but the only actions taken
+		; if the test passes are setting the bolt and the door to their correct
+		; cels.
+		;
+		; We fix it by setting rm440Door's "forceOpen" and "locked" properties
+		; to their correct values (0 and 1) if flag 41 is set, and move the test
+		; before rm440Door's initialization to not let its defaults take effect.
+		(if (proc0_2 41) ; IsFlag 41. Is the door bolted?
+			(rm440Door cel: 0 forceOpen: 0 locked: 1) ; set rm440Door's cel to 0, don't force its opening and lock it
+			(otherHalf cel: 0)
+			(bolt cel: 3)
+		)
 		(rm440Door
 			init:
 			doubleDoor: otherHalf
@@ -98,11 +119,12 @@
 		)
 		(otherHalf init: approachVerbs: 4 1 8)
 		(bolt init:)
-		(if (proc0_2 41)
-			(rm440Door cel: 0)
-			(otherHalf cel: 0)
-			(bolt cel: 3)
-		)
+;;;		(if (proc0_2 41) ; disabled (moved before rm440Door)
+;;;			(rm440Door cel: 0)
+;;;			(otherHalf cel: 0)
+;;;			(bolt cel: 3)
+;;;		)
+		; END OF BUGFIX
 		(chest init:)
 		(tapestry init: approachVerbs: 4 1 8)
 		(painting init:)
