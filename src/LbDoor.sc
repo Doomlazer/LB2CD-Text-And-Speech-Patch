@@ -96,7 +96,22 @@
 	
 	(method (open)
 		(if locked
-			(if (!= global90 2) (doorSound number: 48 play:))
+			; TEXT&SPEECH CHANGE: Prevent locked door sound from playing if message
+			; mode is BOTH.
+			;
+			; If the player uses the DO verb on a locked door and message mode is
+			; TEXT (1), a rattling sound is played while Laura's message is shown.
+			; Sierra used a test to play that sound only when message mode is not
+			; SPEECH (2), because the game can't play more than one digital sound
+			; at once and Laura's speech would interrupt the rattling sound anyway.
+			; When our new BOTH message mode (3) is set, the test will pass and
+			; play the rattling sound, which is heard for a fraction of a second
+			; before the speech interrupts it.
+			;
+			; We fix it by making the test pass only if message mode is TEXT (1).
+;;;			(if (!= global90 2) (doorSound number: 48 play:))
+			(if (== global90 1) (doorSound number: 48 play:))
+			; END OF TEXT&SPEECH CHANGE
 			(gLb2Messager say: 1 0 3 0 0 16)
 			1
 		else
