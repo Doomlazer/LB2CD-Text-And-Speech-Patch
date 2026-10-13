@@ -799,20 +799,52 @@
 		signal $4011
 	)
 	
-	(method (doVerb theVerb)
-		(switch theVerb
-			(4
-				(cond 
-					((rm440Door locked?) (global2 setScript: sUnBoltDoor))
-					((== (rm440Door doorState?) 2) (rm440Door close:))
-					(else (global2 setScript: sBoltDoor))
-				)
+	; BUGFIX: Prevent Laura from closing the Medieval Armory's door without
+	; approaching it.
+	;
+	; Using the DO verb on room 440's bolt while the door is open closes the
+	; door without Laura approaching it. bolt:doVerb closes the door by
+	; calling rm440Door:close if open, but no approach code is ever run
+	; because bolt handles the event and doesn't have approachVerbs defined.
+	;
+	; We fix it by overriding bolt's handleEvent. It'll let bolt handle DO
+	; verb events while the door is NOT open. Every other event is forwarded
+	; to rm440Door's event handler, which makes the door's approach code run.
+	; Forwarding the event requires us to change the event's x and y
+	; properties because rm440Door will only catch events within its bounds.
+	; Since bolt:doVerb is now only reached for DO with the door not open,
+	; it is reduced to the bolt/unbolt case. Messages are unchanged because
+	; bolt and rm440Door share noun 12, except verb 18 (Skeleton Key), which
+	; now uses LbDoor's door-specific messages instead of the generic one.
+	(method (handleEvent pEvent) ; added method
+		(if
+			(and
+				(!= (rm440Door doorState?) 2) ; is the door NOT open?
+				(== (pEvent type?) evVERB) ; is the event a verb event?
+				(== (pEvent message?) 4) ; is the event a DO verb?
 			)
-			(else 
-				(super doVerb: theVerb &rest)
-			)
+			(super handleEvent: pEvent) ; call super's event handler (bolt's normal handling)
+		else
+			(rm440Door handleEvent: (pEvent x: 211 y: 137)) ; call rm440Door's event handler, faking the event's x and y (hardcoded rm440Door's x and y)
 		)
 	)
+	
+	(method (doVerb theVerb)
+;;;		(switch theVerb
+;;;			(4
+;;;				(cond 
+;;;					((rm440Door locked?) (global2 setScript: sUnBoltDoor))
+;;;					((== (rm440Door doorState?) 2) (rm440Door close:))
+;;;					(else (global2 setScript: sBoltDoor))
+;;;				)
+;;;			)
+;;;			(else
+;;;				(super doVerb: theVerb &rest)
+;;;			)
+;;;		)
+		(global2 setScript: (if (rm440Door locked?) sUnBoltDoor else sBoltDoor)) ; if the door is locked unbolt it, else bolt it
+	)
+	; END OF BUGFIX
 )
 
 (instance leftDoor of Feature ; unused, kept to not need a heap patch
