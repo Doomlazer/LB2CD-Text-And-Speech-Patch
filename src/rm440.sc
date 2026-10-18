@@ -747,6 +747,20 @@
 		cel 7
 		signal $4001
 	)
+	
+	; BUGFIX: Fix otherHalf not opening/closing the Medieval Armory's door.
+	;
+	; Using the DO verb on the right half of the Medieval Armory's double
+	; door (otherHalf) returns a generic message instead of opening/closing
+	; the door. otherHalf doesn't even have a doVerb method.
+	; We fix this by adding doVerb to otherHalf to call rm440Door:doVerb
+	; and forward theVerb. This ensures rm440Door opens or closes the
+	; door when the DO verb is used on otherHalf, matching the behavior
+	; of the Pterodactyl Room's (#430) double door.
+	(method (doVerb theVerb) ; added method
+		(rm440Door doVerb: theVerb)
+	)
+	; END OF BUGFIX
 )
 
 (instance rm440Door of LbDoor
