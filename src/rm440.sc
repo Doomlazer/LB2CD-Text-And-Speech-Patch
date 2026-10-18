@@ -847,18 +847,18 @@
 	; END OF BUGFIX
 )
 
-(instance leftDoor of Feature ; unused, kept to not need a heap patch
-	(properties
-		x 94
-		y 88
-		noun 6
-		nsTop 89
-		nsLeft 90
-		nsBottom 134
-		nsRight 99
-		sightAngle 40
-	)
-)
+;;;(instance leftDoor of Feature ; unused
+;;;	(properties
+;;;		x 94
+;;;		y 88
+;;;		noun 6
+;;;		nsTop 89
+;;;		nsLeft 90
+;;;		nsBottom 134
+;;;		nsRight 99
+;;;		sightAngle 40
+;;;	)
+;;;)
 
 (instance chest of Feature
 	(properties
