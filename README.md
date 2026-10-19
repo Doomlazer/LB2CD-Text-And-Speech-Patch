@@ -28,8 +28,11 @@ While this project's main purpose is to patch text & speech support into LB2, fu
   * Adds the following changes:
     * Remove base control panel restrictions
 * Patch 15.scr fixes an issue that made opening Laura's notebook clear the "night palette effect" used in act 2.
+* Patch 16.scr has changes to prevent locked doors' rattling sound play if message mode is BOTH.
+* Patch 22.scr fixes an issue that made the chiming clock's inset appear behind elements of various rooms.
 * Patch 90.scr fixes an issue that made Yvette respond with the wrong message when asking her about Tut in acts 3+.
-* Patch 99.scr has changes to enable the previously unused Death Message speech.
+* Patch 94.scr fixes an issue that made the murderer no longer appear if act 5's pursuit timer expires while changing rooms.
+* Patch 99.scr has changes to enable the previously unused death message speech.
 * Patch 110.scr fixes an issue that made the music abruptly change during the intro.
 * Patch 252.snd (car engine sound) nullifies some volume and pitch MIDI events from that sound, used for fixes in 240.scr and 250.scr.
 * Patch 230.scr (Tribune) fixes an issue that made the leftmost reporter answer as the one next to him, wrong voice included.
@@ -59,7 +62,6 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Using the wire on an opened east door during act 5 doesn't flag it as closed
     * Trying to open the east door while it's wired shut flags it as open
     * Obtaining the wire at the right moment during the chase in act 5 makes the murderer no longer appear
-    * Using the west exit at the right moment during the chase in act 5 makes the murderer no longer appear
     * Laura can get stuck near the east exit (an annoyance, not a softlock)
     * Closing the east door at the right moment during the chase in act 5 lets the murderer pass through the closed door
     * Closing the east door at the right moment during the chase in act 5 gives the player control while the 'death script' is ongoing
@@ -72,18 +74,36 @@ While this project's main purpose is to patch text & speech support into LB2, fu
 * Patch 440.scr (Medieval Armory)
   * Fixes issues with:
     * The room of the Medieval Armory (rm440) doesn't handle verb events
+    * Locking the door during act 5 and re-entering the room will initialize the door unlocked
+    * Laura closes the door from afar (not approaching it) if the DO verb is used on the bolt while the door is open
+    * Using the DO verb on the right half of the door (it's a double door) doesn't open/close the door
     * Unhiding from the tapestry enables the inventory icon when there isn't any active inventory item, which can lead to a crash
+    * Entering the Medieval Armory during the second half of act 5's chase at the right moment can restart the death scene
     * Hiding or unhiding from the tapestry at the right moment during the chase in act 5 can softlock the game
     * Using the south or east exits at the right moment during the chase in act 5 can crash the game
     * The areas for clicking the armors and flags are 10 pixels off on the y axis
     * Laura doesn't properly head towards all the armors and flags
     * Olympia is shown for a fraction of a second right before her meeting with Heimlich
+  * Adds the following changes:
+    * Using the Skeleton Key on the bolt will now triger a door message instead of a generic one
+    * Disable unnecessary code
 * Patch 441.scr
   * Fixes issues with:
     * Mouse cursor doesn't change to an arrow when hovering over the south exit right after the countess' meeting
+    * The countess' can pass through the door if her meeting starts when the door is closing
+    * The hands-off cursor is reverted if the countess' meeting starts when the door is closed, right after the door opens
   * Adds the following changes:
     * Remove the control panel restrictions during the countess' meeting
-* Patch 442.scr fixes a bug that made Laura unable to hide in the tapestry right after Olympia and Heimlich meeting finishes.
+* Patch 442.scr
+    * Fixes issues with:
+      * Laura is unable to hide in the tapestry right after Olympia and Heimlich meeting finishes
+      * Heimlich will pass through the Medieval Armory's room if his meeting with Olympia starts when the door is closing
+* Patch 444.scr
+  * Fixes issues with:
+    * The murderer passes through the Medieval Armory's closed door during act 5 if the pursuit timer expires while the door is closing
+  * Adds the following changes:
+    * Make the wood shavings that fall on the Medieval Armory's floor during act 5's death scene remain on the floor after their first animation
+    * Let the "door banging sound" play when the murderer opens the Medieval Armory's door during act 5's death scene
 * Patch 448.scr (Medieval Armory, northern corridor)
     * Fixes issues with:
       * The room of the northern Medieval Armory (rm448) doesn't handle verb events
@@ -98,14 +118,18 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Interacting with the right coffin during act 5 chase makes Laura temporarily stop using its running animation
   * Adds the following changes:
     * Remove control panel restrictions of this room
-* Patch 450.scr (Egyptian Exhibit, east area) fixes an issue that made the murderer no longer appear if the west or south exits are used at a specific moment during act 5 chase.
+* Patch 450.scr (Egyptian Exhibit, east area)
+  * Fixes issues with:
+    * Crash/freeze due to stack overflow during the second half of the chase in act 5
+    * Tut's meeting can occur every time the meeting timer expires, even if it's not at 10:15
+  * Adds the following changes:
+    * Disable unnecessary code
 * Patch 460.scr (Storage Room) fixes an issue that locked the game when trying to pass through the east door after swinging the crate.
 * Patch 480.scr (T-Rex Room)
   * Fixes issues with:
     * It isn't possible to get the bone unless clicking on its surroundings
     * The bone can be picked up from far away
     * The music can abruptly change right before the start of act 6
-    * Using the north exit at the right moment during the chase in act 5 makes the murderer no longer appear
 * Patch 490.scr (Life Mask Room) fixes an issue that made the areas for the heads 10 pixels off on the y axis.
 * Patch 520.scr (Olympia's Office)
   * Fixes issues with:
@@ -119,7 +143,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Objects disappear during the back rub scene, after the close-up
   * Adds the following changes:
     * Remove control panel restrictions of this room
-* Patch 560.scr (Carrington's Office] fixes an issue that didn't let the player move the painting to reveal the safe.
+* Patch 560.scr (Carrington's Office) fixes an issue that didn't let the player move the painting to reveal the safe.
 * Patch 561.scr (Carrington's Office, safe) has changes to improve the painting/safe bugfix of 560.scr.
 * Patch 600.scr (Museum Basement) fixes a softlock that occurred when the 'bugs with meat' appear while leaving the basement room.
 * Patch 610.scr (Alcohol Lab) has changes to remove the control panel restrictions of this room.
@@ -131,7 +155,7 @@ While this project's main purpose is to patch text & speech support into LB2, fu
     * Remove control panel restrictions of this room
 * Patch 710.scr (Sun Altar Room) has changes to remove the control panel restrictions of this room.
 * Patch 770.scr (Prison)
-  * Fixes issues with
+  * Fixes issues with:
     * Rock-breaking sound effects interrupt spoken dialog in the BOTH message mode
     * Rock-breaking sound effects sometimes aren't played
     * The left cop on the tower and the generic prisoners have animations that don't loop and were supposed to
