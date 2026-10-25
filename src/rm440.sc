@@ -280,12 +280,12 @@
 ;;;				else
 ;;;					(global2 setScript: (ScriptID 444 0)) ; set sHeKills
 ;;;				)
-				(if (global2 script?) ; does the current room have any script attached?
-					(if (not (proc999_5 (global2 script?) sExitEast sExitSouth (ScriptID 444 0))) ; OneOf, are sExitEast, sExitSouth and sHeKills NOT attached to the current room?
-						((global2 script?) next: (ScriptID 444 0)) ; queue sHeKills next
+				(if script ; does the current room have any script attached?
+					(if (not (proc999_5 script sExitEast sExitSouth (ScriptID 444 0))) ; OneOf, are sExitEast, sExitSouth and sHeKills NOT attached to the current room?
+						(script next: (ScriptID 444 0)) ; queue sHeKills next
 					)
 				else
-					(global2 setScript: (ScriptID 444 0)) ; set sHeKills
+					(self setScript: (ScriptID 444 0)) ; set sHeKills
 				)
 				; END OF BUGFIX (see also PursuitRgn:newRoom, in #94)
 			)
