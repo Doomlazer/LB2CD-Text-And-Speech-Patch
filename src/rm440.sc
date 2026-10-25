@@ -787,7 +787,26 @@
 	)
 	
 	(method (open)
-		(bolt setPri: 15)
+		; BUGFIX: Prevent bolt's visual priority from changing when trying to
+		; open a locked door.
+		;
+		; During act 5, it's possible to lock (bolt) the Medieval Armory's door
+		; (rm440Door). If the player uses the DO verb on the locked door, it
+		; will incorrectly trigger a change in bolt's priority, making it render
+		; above Laura (ego) until the player uses the DO verb on the bolt or
+		; re-enters the room. This occurs because rm440Door:open has code to
+		; change bolt's priority and make it render above the door during its
+		; opening animation, but the method handles both opening the door and
+		; displaying the 'locked message' (via super:open), so the offending
+		; code is run regardless of the door's locked state.
+		;
+		; We fix it by testing if the door is NOT locked before setting bolt's
+		; priority.
+;;;		(bolt setPri: 15)
+		(if (not locked)
+			(bolt setPri: 15)
+		)
+		; END OF BUGFIX
 		(super open:)
 	)
 	
