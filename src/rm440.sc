@@ -624,11 +624,53 @@
 	(method (changeState newState)
 		(switch (= state newState)
 			(0
-				(gGame handsOff:)
+				; BUGFIX: Prevent hands-off from being reverted when using the DO verb
+				; on the bolt while the door is closing.
+				;
+				; Using the DO verb on rm440Door to close it and then quickly using it
+				; on bolt makes sBoltDoor call handsOff while the door is still closing.
+				; When the door finishes, rm440Door:cue (inherited from Door) sees that
+				; the player has no control and calls handsOn(1), which restores the
+				; state saved by sBoltDoor's own handsOff (the player having control)
+				; and gives control back to the player in the middle of the script. This
+				; can lead to glitches.
+				;
+				; We fix it by making state 0 of sBoltDoor loop (decrementing its state)
+				; while rm440Door has a cycler, calling handsOff only if the player still
+				; has control. The check must be repeated on every loop, because the
+				; door's cue gives control back whenever its animation finishes.
+;;;				(gGame handsOff:)
+				(if (gUser canControl:) ; added test. Does the player have control?
+					(gGame handsOff:) ; set hands-off
+				)
+				(if (rm440Door cycler?) ; added test. Is rm440Door cycling (opening/closing)?
+					(-- state) ; reduce state by 1. The current state will be the next state (repeat)
+				)
+				; END OF BUGFIX
 				(= cycles 1)
 			)
+			; BUGFIX: Fix Laura moving to problematic coordinates within the room's
+			; obstacle polygon when approaching bolt (1/3)
+			;
+			; bolt has no approachVerbs, its DO verb calls sBoltDoor/sUnBoltDoor,
+			; and those scripts make Laura approach bolt via a hardcoded PolyPath to
+			; x 213 y 146. Those coordinates are within the room's obstacle polygon
+			; (defined in script 2440) and PolyPath is obstacle-aware, so using the
+			; DO verb on the bolt again makes Laura briefly walk out of the polygon
+			; and back to the target before acting, even if she was already there.
+			;
+			; We fix it by changing PolyPath's target to x 210 y 144, point outside
+			; of the room's obstacle polygon. We also update further uses of the old
+			; coordinates to the new ones, and align Laura's bolting/unbolting
+			; animations with the new coordinates. This needs to be done in both
+			; sBoltDoor and sUnBoltDoor.
+			;
+			; This change makes the transition between the unbolt -> bolt animations
+			; happen too fast (when act != 5). We add a wait in sUnBoltDoor's state
+			; 0 to make it less abrupt.
 			(1
-				(gEgo setMotion: PolyPath 213 146 self)
+;;;				(gEgo setMotion: PolyPath 213 146 self)
+				(gEgo setMotion: PolyPath 210 144 self) ; new coordinates outside of the room's obstacle polygon
 			)
 			(2
 				(gEgo
@@ -636,7 +678,8 @@
 					loop: 2
 					cel: 3
 					setPri: 11
-					posn: 207 144
+;;;					posn: 207 144
+					posn: 205 144 ; x-align bolting animation with the new coordinates
 					setScale: Scaler 100 100 190 90
 					cycleSpeed: 12
 					setCycle: Beg self
@@ -652,29 +695,70 @@
 					setPri: -1
 					cel: 6
 					setScale: Scaler 155 0 190 90
-					posn: 213 146
+;;;					posn: 213 146
+					posn: 210 144 ; new coordinates outside of the room's obstacle polygon
+			; END OF BUGFIX (see also sUnBoltDoor's states 0 to 2)
+
+					; TWEAK: Prevent Laura from needlessly turning towards bolt (1/2)
+					;
+					; Using the DO verb on the bolt while the door is closed/closing makes
+					; Laura turn before bolt:doVerb is called. Using it again on bolt right
+					; after she finishes moving and locking/unlocking the door makes her
+					; turn once more. Further DO verb uses will work correctly, making her
+					; not turn anymore. bolt has no approachVerbs, so Laura walks to it with
+					; the PolyPath in sBoltDoor/sUnBoltDoor. Before that, cueObj (in script
+					; #950) already sets her heading from her position at click time. That
+					; position differs on the first click (before being next to the bolt)
+					; and the second (being next to it), hence the extra turn.
+					;
+					; We work around it by directly setting ego's heading property to 137,
+					; the angle Laura ends up with when the DO verb is used on the bolt
+					; if she's already standing next to it. This needs to be done here in
+					; sBoltDoor and in sUnBoltDoor.
+					heading: 137 ; added. Workaround, enforce heading
+					; END OF TWEAK (see also sUnBoltDoor:changeState(2))
 				)
 				(= cycles 1)
 			)
-			(4
-				(gEgo normalize: (if (== global123 5) 426 else 831))
-				(= cycles 1)
-			)
-			(5
+			; TWEAK: Minor optimizations.
+			;
+			; Outside of act 5, sBoltDoor is immediately replaced by sUnBoltDoor,
+			; so it doesn't need to normalize ego, lock the door, set flag 41 or
+			; use PursuitRgn (sUnBoltDoor reverts all of it anyway).
+			;
+			; We move those instructions into the act 5 branch. The final state is
+			; merged into the previous one, and the normalize one is merged as well.
+			; We reorder the state accordingly. The non-act 5 branch doesn't need a
+			; self:dispose because client:setScript will already dispose it.
+;;;			(4  ; no longer needed state, ego will be normalized in the next state
+;;;				(gEgo normalize: (if (== global123 5) 426 else 831))
+;;;				(= cycles 1)
+;;;			)
+;;;			(5
+			(4 ; decrease state # by 1
 				(bolt stopUpd:)
 				(if (== global123 5)
-					(= cycles 1)
+					(gEgo normalize: 426) ; added, normalize ego using view 426 (running Laura)
+					; Instructions moved from last state
+					(gGame handsOn:)
+					(rm440Door locked: 1)
+					(PursuitRgn increaseTime:)
+					(proc0_3 41)
+					(self dispose:)
+					; End of instructions moved from last state
+;;;					(= cycles 1) ; no longer needed, script already disposed
 				else
 					(client setScript: sUnBoltDoor)
 				)
 			)
-			(6
-				(gGame handsOn:)
-				(rm440Door locked: 1)
-				(if (== global123 5) (PursuitRgn increaseTime:))
-				(proc0_3 41)
-				(self dispose:)
-			)
+;;;			(6 ; no longer needed state, all instructions moved to the previous state
+;;;				(gGame handsOn:)
+;;;				(rm440Door locked: 1)
+;;;				(if (== global123 5) (PursuitRgn increaseTime:))
+;;;				(proc0_3 41)
+;;;				(self dispose:)
+;;;			)
+			; END OF TWEAK
 		)
 	)
 )
@@ -684,12 +768,29 @@
 	
 	(method (changeState newState)
 		(switch (= state newState)
+			; BUGFIX: Fix Laura moving to problematic coordinates within the room's
+			; obstacle polygon when approaching bolt (2/3)
+			;
+			; Our changes in sBoltDoor (states 1 and 3) make Laura's bolting
+			; animation transition too abruptly to the unbolting animation (only
+			; when act != 5). We improve this by adding a test to this script's
+			; state 0 to wait 15 ticks if act isn't 5.
+			;
+			; We also update the coordinates in state 1 to the new ones we use in
+			; sBoltDoor, and adjust the coordinates of Laura's unbolting animation
+			; in state 2 to match them. This script's state 3 also needs updated
+			; coordinates.
 			(0
 				(gGame handsOff:)
-				(= cycles 1)
+				(if (== global123 5) ; added test, are we in act 5?
+					(= cycles 1)
+				else
+					(= ticks 15) ; wait 15 ticks (less abrupt sBoltDoor -> sUnBoltDoor transition)
+				)
 			)
 			(1
-				(gEgo setMotion: PolyPath 213 146 self)
+;;;				(gEgo setMotion: PolyPath 213 146 self)
+				(gEgo setMotion: PolyPath 210 144 self) ; new coordinates outside of the room's obstacle polygon
 			)
 			(2
 				(gEgo
@@ -697,16 +798,31 @@
 					loop: 2
 					cel: 0
 					setPri: 11
-					posn: 207 144
+;;;					posn: 207 144
+					posn: 205 144 ; x-align unbolting animation with the new coordinates
+			; END OF BUGFIX (see also state 3, and sBoltDoor's states 1 to 3)
 					setScale: Scaler 100 100 190 90
 					cycleSpeed: 12
 					setCycle: End self
+					; TWEAK: Prevent Laura from needlessly turning towards bolt (2/2)
+					;
+					; We set ego's heading property here the same way we've done it in
+					; sBoltDoor's state 3.
+					heading: 137 ; added. Workaround, enforce heading
+					; END OF TWEAK (see also sBoltDoor:changeState(3)
 				)
 				(bolt setCycle: Beg)
 				(noise number: 446 flags: 1 loop: 1 play:)
 			)
 			(3
-				(gEgo view: 831 loop: 8 setPri: -1 cel: 6 posn: 213 146)
+				; BUGFIX: Fix Laura moving to problematic coordinates within the room's
+				; obstacle polygon when approaching bolt (3/3)
+				;
+				; We update Laura's coordinates to match the new ones we use in
+				; sBoltDoor and this script's state 1.
+;;;				(gEgo view: 831 loop: 8 setPri: -1 cel: 6 posn: 213 146)
+				(gEgo view: 831 loop: 8 setPri: -1 cel: 6 posn: 210 144) ; 210 144 is outside of the room's obstacle polygon
+				; END OF BUGFIX (see also states 0 to 2, and sBoltDoor's states 1 to 3)
 				(= cycles 1)
 			)
 			(4
@@ -716,9 +832,21 @@
 				)
 				(= cycles 1)
 			)
+			; TWEAK: Minor optimizations.
+			;
+			; Outside of act 5, sUnBoltDoor doesn't need to unlock the door, unset
+			; flag 41 or use PursuitRgn (Before act 5, PursuitRgn isn't initialized
+			; and the door can't be locked).
+			;
+			; We move those instructions into the act 5 branch in state 5.
 			(5
 				(bolt stopUpd:)
 				(if (== global123 5)
+					; Instructions moved from last state
+					(rm440Door locked: 0)
+					(PursuitRgn decreaseTime:)
+					(proc0_4 41)
+					; End of instructions moved from last state
 					(= cycles 1)
 				else
 					(gLb2Messager say: 12 4 3 0 self)
@@ -726,11 +854,13 @@
 			)
 			(6
 				(gGame handsOn:)
-				(rm440Door locked: 0)
-				(if (== global123 5) (PursuitRgn decreaseTime:))
-				(proc0_4 41)
+				; Instructions moved to previous state (unneded outside of act 5)
+;;;				(rm440Door locked: 0)
+;;;				(if (== global123 5) (PursuitRgn decreaseTime:))
+;;;				(proc0_4 41)
 				(self dispose:)
 			)
+			; END OF TWEAK
 		)
 	)
 )
