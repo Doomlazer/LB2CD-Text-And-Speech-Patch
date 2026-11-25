@@ -1121,7 +1121,28 @@
 
 (instance dogArmor of Feature
 	(properties
-		y 100
+		; BUGFIX: Let the dog armor receive verb events before Laura when she's
+		; behind it.
+		;
+		; If Laura is behind the dog armor, using a verb on the armor by
+		; clicking on the pixels that cover Laura's sprite will send her (ego)
+		; the event instead. dogArmor has no x property (defaults to 0) and
+		; its y property is lower than what it should be (100), these
+		; coordinates are far from where the armor is seen. The game picks the
+		; cast member with the highest y (lower on screen), so the inaccurate y
+		; value makes Laura be chosen instead. These x and y values also make
+		; Laura face towards a wrong spot (x 0 y 100) when a verb is used on the
+		; dog armor.
+		;
+		; We fix this by setting dogArmor's x and y to 62 and 174, respectively.
+		; The point now lands near the feet of the armor. This doesn't visually
+		; affect the dog armor, as it's rendered as part of the background image
+		; (Pic's visual layer). It doesn't move the area where dogArmor catches
+		; events either, as it's a mask determined by the yellow control color.
+		x 62 ; added
+;;;		y 100
+		y 174
+		; END OF BUGFIX
 		noun 3
 	)
 )
